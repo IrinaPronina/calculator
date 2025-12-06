@@ -1,0 +1,43 @@
+.profix-tab {
+    position: relative;
+    border: none;
+    background: none;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    transition: background-color 0.2 linear;
+    text-transform: uppercase;
+}
+
+.profix-tab:hover {
+    cursor: pointer;
+}
+.profix-tab_variant_stroke {
+    color: #a3a3a3;
+}
+
+.profix-tab_variant_stroke.profix-tab_size_32 {
+    gap: 4px;
+    height: 32px;
+    padding: 6px 2px;
+}
+.profix-tab_variant_button.profix-tab_size_32 {
+    gap: 4px;
+    height: 32px;
+    padding: 6px 2px;
+    border-radius: 12px;
+}
+
+.profix-tab_variant_stroke.active::after {
+    position: absolute;
+    content: '';
+    right: 0;
+    left: 0;
+    bottom: 0;
+    height: 2px;
+    border-radius: 4px;
+    background-color: #a3a3a3;
+}
+.profix-tab_variant_stroke.active {
+    color: red;
+}

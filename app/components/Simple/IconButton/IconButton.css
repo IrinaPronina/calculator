@@ -1,0 +1,241 @@
+.profix-icon-button {
+    background-color: unset;
+    box-sizing: border-box;
+    /* min-width: 180px; */
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+.profix-icon-button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    flex-grow: 1;
+}
+
+.profix-icon-button.profix-full {
+    width: 100%;
+}
+
+.profix-icon-button-body {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.profix-icon-button--title {
+    font-family: 'Exo2Medium';
+    font-style: normal;
+    font-weight: 500;
+}
+
+.profix-icon-button_32 {
+    height: 32px;
+    width: 32px;
+    border-radius: 2px;
+    padding: 2px;
+}
+
+.profix-icon-button_32 .profix-icon-button-body {
+    gap: 4px;
+}
+
+.profix-icon-button_44 {
+    height: 44px;
+    width: 44px;
+    border-radius: 8px;
+    padding: 10px 24px;
+}
+
+.profix-icon-button_44 .profix-icon-button-body {
+    gap: 4px;
+}
+
+.profix-icon-button_52 {
+    height: 52px;
+    width: 52px;
+    border-radius: 2px;
+    padding: 8px;
+}
+
+.profix-icon-button_52 .profix-icon-button-body {
+    gap: 8px;
+}
+
+.profix-icon-button_72 {
+    height: 72px;
+    width: 72px;
+    border-radius: 10px;
+    padding: 24px 40px;
+}
+
+.profix-icon-button_72 .profix-icon-button-body {
+    gap: 8px;
+}
+
+.profix-icon-button_primary {
+    /* background-color: var(--controls-primary-active); */
+    text-align: center;
+    background: #54b0bf;
+    border: 2px solid #54b0bf;
+    color: #fff;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+    transition: all 0.3s;
+}
+.profix-icon-button_primary .profix-icon-button-body {
+    justify-content: center;
+}
+
+.profix-icon-button_primary:hover {
+    color: #54b0bf;
+}
+.profix-icon-button_primary::before {
+    right: -50px;
+    border-right: 50px solid transparent;
+    border-top: 52px solid #fff;
+    -webkit-transform: translateX(-100%);
+    transform: translateX(-100%);
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    transition: all 0.3s;
+    z-index: -1;
+}
+.profix-icon-button_primary::after {
+    left: -50px;
+    border-left: 50px solid transparent;
+    border-bottom: 52px solid #fff;
+    -webkit-transform: translateX(100%);
+    transform: translateX(100%);
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    transition: all 0.3s;
+    z-index: -1;
+}
+.profix-icon-button_primary:hover::before {
+    -webkit-transform: translateX(-49%);
+    transform: translateX(-49%);
+}
+.profix-icon-button_primary:hover::after {
+    -webkit-transform: translateX(49%);
+    transform: translateX(49%);
+}
+
+.profix-icon-button_primary .profix-icon-button--title {
+    color: var(--constant_greyscale_0);
+}
+
+.profix-icon-button_primary .fill {
+    fill: var(--constant_greyscale_0);
+}
+
+.profix-icon-button_alternative {
+    background-color: var(--controls-secondary-active);
+}
+
+.profix-icon-button_alternative .profix-icon-button--title {
+    color: var(--text-inverted);
+}
+
+.profix-icon-button_alternative .fill {
+    fill: var(--text-inverted);
+}
+
+.profix-icon-button_alwaysWhite {
+    background-color: #fff;
+}
+
+.profix-icon-button_alwaysWhite .profix-icon-button--title {
+    color: #a3a3a3;
+}
+
+.profix-icon-button_alwaysWhite .fill {
+    fill: 000;
+}
+
+.profix-icon-button_secondary {
+    background-color: #f2f3f7;
+}
+
+.profix-icon-button--background-secondary.profix-icon-button_secondary {
+    background-color: var(--controls-alternative);
+}
+
+.profix-icon-button_secondary .profix-icon-button--title {
+    color: var(--text-primary);
+}
+
+.profix-icon-button_secondary .fill {
+    fill: var(--icons-primary);
+}
+
+.profix-icon-button_ghost {
+    background-color: unset;
+}
+
+.profix-icon-button_ghost .profix-icon-button--title {
+    color: var(--text-headline);
+}
+
+.profix-icon-button_ghost .fill {
+    fill: var(--icons-primary);
+}
+
+.profix-icon-button_negative {
+    background-color: var(--controls-tertiary-active);
+}
+.profix-icon-button--background-secondary.profix-icon-button_negative {
+    background-color: var(--controls-alternative);
+}
+
+.profix-icon-button_negative .profix-icon-button--title {
+    color: var(--text-negative);
+}
+
+.profix-icon-button_negative .fill {
+    fill: var(--text-negative);
+}
+
+.profix-icon-button:focus {
+    outline: none;
+}
+
+.profix-icon-button:disabled {
+    background-color: var(--controls-inactive);
+    opacity: 0.6;
+    cursor: no-drop;
+    border: none;
+}
+
+.profix-icon-button:disabled .profix-icon-button--title {
+    color: var(--text-tertiary);
+}
+
+.profix-icon-button:disabled .fill {
+    fill: var(--icons-secondary);
+}
+
+.profix-icon-button.profix-loading {
+    pointer-events: none;
+}
+
+.profix-icon-button.profix-loading .profix-icon-button-body {
+    opacity: 0;
+}
+
+.profix-icon-button--loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}

@@ -1,49 +1,116 @@
 @import 'tailwindcss';
+@font-face {
+    font-family: 'Exo2Light';
+    src: url('./fonts/Exo2Light.woff') format('woff');
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Exo2Bold';
+    src: url('./fonts/Exo2Bold.woff') format('woff');
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Exo2Medium';
+    src: url('./fonts/Exo2Medium.woff') format('woff');
+    font-display: swap;
+}
+
+@theme {
+    --color-primary: #54b0bf;
+    --text-primary: #54b0bf;
+    --light-primary: #c6eaef;
+    --dark-primary: #1b707c;
+    --color-main: #a3a3a3;
+    --font-Exo2Light: Exo2Light;
+    --font-Exo2Bold: Exo2Bold;
+    --font-Exo2Medium: Exo2Medium;
+    --bg-gradient: linear-gradient(
+        to right,
+        rgba(84, 176, 191, 1),
+        rgba(84, 176, 191, 0)
+    );
+}
+
+/*
+
+@font-face {
+  font-family: 'Exo2SemiBold';
+  src: url('./fonts/Exo2SemiBold.woff') format('woff');
+  font-display: swap;
+}
+ */
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+    --background: #ffffff;
+    --foreground: #171717;
+    --color-primary: #54b0bf;
+    --color-main: #a3a3a3;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+    :root {
+        --background: #0a0a0a;
+        --foreground: #ededed;
+    }
 }
 
 html,
 body {
-  max-width: 100vw;
-  overflow-x: hidden;
+    max-width: 100vw;
+    overflow-x: hidden;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    font-family: 'Exo2Light', sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    @apply text-neutral-600;
+    background: var(--background);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 * {
-  box-sizing: border-box;
-border: none;
+    box-sizing: border-box;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+header {
+    border: none;
 }
 
-header{
-  border: none;
+.font-Exo2Bold {
+    font-family: var(--font-Exo2Bold);
+}
+.font-Exo2Medium {
+    font-family: var(--font-Exo2Medium);
+}
+.color-primary {
+    color: var(--color-primary);
+}
+.color-main {
+    color: var(--color-main);
 }
 
+.admin th {
+    vertical-align: middle;
+    padding: 12px 24px;
+    border: 1px solid #e4e4e4;
+    color: #fff;
+    background-color: #54b0bf;
+}
+.admin td {
+    vertical-align: middle;
+    padding: 12px 24px;
+    border: 1px solid #e4e4e4;
+}
 
-
+@layer base {
+    .table-td {
+        @apply border border-gray-300 px-1 py-2 text-sm;
+    }
+}
 @media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+    html {
+        color-scheme: dark;
+    }
 }
