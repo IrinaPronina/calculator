@@ -5,6 +5,10 @@ import TableItem from '../tableItem/TableItem';
 
 interface PayTableProps {
     settings: SettingsType;
+    onItemChange: (
+        id: string,
+        patch: { price?: number; increase?: number },
+    ) => void;
 }
 
 const PayTable = (props: PayTableProps) => {
@@ -27,6 +31,7 @@ const PayTable = (props: PayTableProps) => {
                             name={item.name}
                             price={item.price}
                             increase={item.increase}
+                            onChange={props.onItemChange}
                         />
                     ))}
                 </tbody>

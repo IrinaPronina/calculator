@@ -4,6 +4,7 @@ export interface radioTypes {
     checked: string;
     id: string;
     name?: string;
+    groupName?: string;
     disabled?: boolean;
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }

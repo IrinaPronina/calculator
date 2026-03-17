@@ -6,27 +6,28 @@ import { numberInputValue } from '@/app/utils/functions';
 
 interface GeneralTableProps {
     settings: SettingsType;
+    onChange: (
+        patch: Partial<{ rate: number; overheads: number; profit: number }>,
+    ) => void;
 }
 
 const GeneralTable = (props: GeneralTableProps) => {
-    const [rate, setRate] = React.useState(props.settings.general.rate || 0);
-    const [overheads, setOverheads] = React.useState(
-        props.settings.general.overheads || 0
-    );
-    const [profit, setProfit] = React.useState(
-        props.settings.general.profit || 0
-    );
-
     const handleChangeRate = (value: string) => {
-        setRate(Number(numberInputValue(value.toString())));
+        props.onChange({
+            rate: Number(numberInputValue(value.toString()) || '0'),
+        });
     };
 
     const handleChangeOverheads = (value: string) => {
-        setOverheads(Number(numberInputValue(value.toString())));
+        props.onChange({
+            overheads: Number(numberInputValue(value.toString()) || '0'),
+        });
     };
 
     const handleChangeProfit = (value: string) => {
-        setProfit(Number(numberInputValue(value.toString())));
+        props.onChange({
+            profit: Number(numberInputValue(value.toString()) || '0'),
+        });
     };
 
     return (
@@ -39,7 +40,7 @@ const GeneralTable = (props: GeneralTableProps) => {
                             <InputNumber
                                 type={'number'}
                                 size={32}
-                                value={rate.toString()}
+                                value={props.settings.general.rate.toString()}
                                 onChange={handleChangeRate}
                             />
                         </td>
@@ -50,7 +51,7 @@ const GeneralTable = (props: GeneralTableProps) => {
                             <InputNumber
                                 type={'number'}
                                 size={32}
-                                value={overheads.toString()}
+                                value={props.settings.general.overheads.toString()}
                                 onChange={handleChangeOverheads}
                             />
                         </td>
@@ -61,7 +62,7 @@ const GeneralTable = (props: GeneralTableProps) => {
                             <InputNumber
                                 type={'number'}
                                 size={32}
-                                value={profit.toString()}
+                                value={props.settings.general.profit.toString()}
                                 onChange={handleChangeProfit}
                             />
                         </td>

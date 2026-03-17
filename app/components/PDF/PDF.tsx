@@ -9,8 +9,12 @@ import {
     StyleSheet,
 } from '@react-pdf/renderer';
 import Logo from './Logo';
+import {
+    CalculateRequest,
+    OfferTotals,
+    ServiceItem,
+} from '@/app/models/concreteCalcTypes';
 
-// Font registration
 Font.register({
     family: 'Roboto',
     src: '/fonts/Roboto-Regular.woff',
@@ -27,214 +31,104 @@ Font.register({
     fontWeight: 300,
 });
 
-// Data structure for table rows
-const laborData = [
-    {
-        id: '0156',
-        name: 'Укладка пленки полиэтиленовой',
-        volume: '1000',
-        unit: 'м²',
-        price: '22',
-        total: '22000',
-        note: 'в 1 слой с проклейкой',
-    },
-    {
-        id: '0100',
-        name: 'Армирование готовой сеткой',
-        volume: '1000',
-        unit: 'м²',
-        price: '95',
-        total: '95 000,00',
-        note: 'укладка с нахлестом',
-    },
-    {
-        id: '0155',
-        name: 'Установка маячковых направляющих',
-        volume: '450',
-        unit: 'м/п',
-        price: '81',
-        total: '36 450,00',
-        note: 'на сварку, съемные',
-    },
-    {
-        id: '0145',
-        name: 'Укладка бетонной смеси до 100 мм',
-        volume: '1000',
-        unit: 'м²',
-        price: '270',
-        total: '270 000,00',
-        note: 'с вибрацией',
-    },
-    {
-        id: '0102',
-        name: 'Внесение упрочняющей смеси',
-        volume: '1000',
-        unit: 'м²',
-        price: '22',
-        total: '22 000,00',
-        note: 'с помощью тележки',
-    },
-    {
-        id: '0110',
-        name: 'Затирка поверхности бетона',
-        volume: '1000',
-        unit: 'м²',
-        price: '143',
-        total: '143 000,00',
-        note: 'железнение лопастями',
-    },
-    {
-        id: '0140',
-        name: 'Покрытие защитным лаком в 1 слой',
-        volume: '1000',
-        unit: 'м²',
-        price: '15',
-        total: '15 000,00',
-        note: 'для набора прочности',
-    },
-    {
-        id: '0130',
-        name: 'Нарезка усадочных швов',
-        volume: '700',
-        unit: 'м/п',
-        price: '80',
-        total: '56 000,00',
-        note: '1/3 от толщины пола',
-    },
-    {
-        id: '0109',
-        name: 'Заполнение усадочных швов',
-        volume: '700',
-        unit: 'м/п',
-        price: '60',
-        total: '42 000,00',
-        note: 'вилатерм с герметиком',
-    },
-    {
-        id: '0517',
-        name: 'Уборка строительного мусора',
-        volume: '1000',
-        unit: 'м²',
-        price: '14',
-        total: '14 000,00',
-        note: 'сухая уборка',
-    },
-];
+interface PDFProps {
+    description?: string;
+    title?: string;
+    items?: ServiceItem[];
+    sectionTotal?: number;
+    totals?: OfferTotals;
+    orderInfo?: Required<CalculateRequest>;
+    calcNumber?: string;
+    calcDate?: string;
+}
 
 const tableColumns = [
     { key: 'id', label: 'Арт.', width: '5%' },
     { key: 'name', label: 'Наименование', width: '30%' },
-    { key: 'volume', label: 'Объем', width: '7%' },
+    { key: 'volume', label: 'Объем', width: '8%' },
     { key: 'unit', label: 'изм.', width: '5%' },
     { key: 'price', label: 'Стоимость, руб.', width: '16%' },
     { key: 'total', label: 'Всего', width: '16%' },
-    { key: 'note', label: 'Примечание', width: '21%' },
+    { key: 'note', label: 'Примечание', width: '20%' },
 ];
 
-// Reusable components
-interface TableRowProps {
-    data: Record<string, string>;
-    columns: Array<{ key: string; width: string }>;
-    isEven?: boolean;
-    isTotal?: boolean;
-}
-
-const TableRow: React.FC<TableRowProps> = ({
-    data,
-    columns,
-    isEven = false,
-    isTotal = false,
-}) => {
-    const rowStyle = isTotal
-        ? [styles.tableRow, { backgroundColor: '#c6eaef' }]
-        : isEven
-        ? [styles.tableRow, { backgroundColor: '#fbf9fa' }]
-        : styles.tableRow;
-
-    return (
-        <View style={rowStyle}>
-            {columns.map((column) => (
-                <Text
-                    key={column.key}
-                    style={[
-                        styles.tableCell,
-                        { width: column.width },
-                        ...(isTotal ? [{ fontWeight: 'bold' }] : []),
-                    ]}>
-                    {data[column.key] || ''}
-                </Text>
-            ))}
-        </View>
-    );
+const formatCurrency = (value: number): string => {
+    return value.toLocaleString('ru-RU', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
 };
 
-interface TableProps {
-    title: string;
-    columns: Array<{ key: string; label: string; width: string }>;
-    data: Array<Record<string, string>>;
-    totalAmount: string;
-}
-
-const Table: React.FC<TableProps> = ({ title, columns, data, totalAmount }) => {
-    return (
-        <View style={styles.section}>
-            <Text style={styles.sectionHeader}>{title}</Text>
-
-            {/* Table header */}
-            <View style={[styles.tableRow, styles.tableHeader]}>
-                {columns.map((column) => (
-                    <Text
-                        key={column.key}
-                        style={[
-                            styles.tableCell,
-                            {
-                                width: column.width,
-                                color: '#fff',
-                                fontWeight: '500',
-                            },
-                        ]}>
-                        {column.label}
-                    </Text>
-                ))}
-            </View>
-
-            {/* Table rows */}
-            {data.map((row, index) => (
-                <TableRow
-                    key={row.id || index}
-                    data={row}
-                    columns={columns}
-                    isEven={index % 2 === 1}
-                />
-            ))}
-
-            {/* Total row */}
-            <TableRow
-                data={{
-                    section: 'Итого по разделу',
-                    total: totalAmount,
-                }}
-                columns={[
-                    { key: 'section', width: '63%' },
-                    { key: 'total', width: '37%' },
-                ]}
-                isTotal={true}
-            />
-        </View>
-    );
+const formatNumber = (value: number): string => {
+    return Number.isInteger(value)
+        ? value.toLocaleString('ru-RU')
+        : value.toLocaleString('ru-RU', {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 2,
+          });
 };
 
-interface SectionProps {
-    title: string;
-    children: React.ReactNode;
-}
+const renderOrderInfoRows = (orderInfo: Required<CalculateRequest>) => {
+    const baseLabelMap: Record<string, string> = {
+        base_concrete: 'Существующее бетонное',
+        base_sand: 'Уплотненный песок',
+        base_rubble: 'Уплотненный щебень',
+    };
+    const gradeLabelMap: Record<number, string> = {
+        1: 'М250 (В20)',
+        2: 'М300 (В22,5)',
+        3: 'М350 (В25)',
+    };
+    const reinforcementLabelMap: Record<string, string> = {
+        single: 'Одинарное',
+        double: 'Двойное',
+        grid: 'Сварная сетка',
+        fiber: 'Фибра полимерная',
+        doNotKnow: 'Не знаю',
+    };
+    const autoThicknessMap: Record<string, number> = {
+        base_concrete: 80,
+        base_sand: 120,
+        base_rubble: 100,
+    };
+    const thicknessText =
+        orderInfo.thickness === 'auto'
+            ? `${autoThicknessMap[orderInfo.base]} мм (авто)`
+            : `${orderInfo.thickness} мм`;
+    const preparationText =
+        orderInfo.preparation === 'no'
+            ? 'Нет'
+            : `${orderInfo.preparation} мм`;
+    const microfiberText =
+        orderInfo.fiber === 'no'
+            ? 'Нет'
+            : `${orderInfo.fiber} кг/м³`;
+    const toppingText =
+        orderInfo.topping === 'no'
+            ? 'Нет'
+            : `Да (${orderInfo.topping_amount} кг/м²)`;
+    const pumpText = orderInfo.pump === 'yes' ? 'Да' : 'Нет';
 
-const Section: React.FC<SectionProps> = ({ title, children }) => (
-    <View style={styles.section}>
-        <Text style={styles.sectionHeader}>{title}</Text>
-        {children}
-    </View>
-);
+    return [
+        { label: 'Площадь пола', value: `${orderInfo.area} м²` },
+        { label: 'Ваше основание', value: baseLabelMap[orderInfo.base] || orderInfo.base },
+        {
+            label: 'Армирование',
+            value:
+                reinforcementLabelMap[orderInfo.reinforcement] ||
+                orderInfo.reinforcement,
+        },
+        { label: 'Толщина бетона', value: thicknessText },
+        { label: 'Подбетонка', value: preparationText },
+        {
+            label: 'Марка бетона',
+            value: gradeLabelMap[orderInfo.concrete_grade] || '',
+        },
+        { label: 'Микрофибра', value: microfiberText },
+        { label: 'Топпинг', value: toppingText },
+        { label: 'Бетононасос', value: pumpText },
+    ];
+};
 
 const styles = StyleSheet.create({
     page: {
@@ -251,10 +145,6 @@ const styles = StyleSheet.create({
         fontSize: 10,
         fontWeight: '500',
         fontFamily: 'Roboto',
-    },
-    table: {
-        width: '100%',
-        borderCollapse: 'collapse',
     },
     tableHeader: {
         backgroundColor: '#54b0bf',
@@ -294,6 +184,8 @@ const styles = StyleSheet.create({
         fontFamily: 'Roboto',
         color: '#525252',
         marginBottom: 12,
+        whiteSpace: 'pre-wrap',
+        lineHeight: 1.35,
     },
     header: {
         flexDirection: 'row',
@@ -359,9 +251,80 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#475569',
     },
+    summaryBox: {
+        borderWidth: 1,
+        borderColor: '#d1d5dc',
+        borderStyle: 'solid',
+        marginTop: 10,
+    },
+    summaryRow: {
+        flexDirection: 'row',
+        borderBottomWidth: 1,
+        borderBottomColor: '#d1d5dc',
+    },
+    summaryLabel: {
+        width: '70%',
+        padding: 6,
+        fontSize: 9,
+        color: '#334155',
+        borderRightWidth: 1,
+        borderRightColor: '#d1d5dc',
+    },
+    summaryValue: {
+        width: '30%',
+        padding: 6,
+        fontSize: 9,
+        color: '#334155',
+        textAlign: 'right',
+    },
+    summaryTotal: {
+        backgroundColor: '#c6eaef',
+    },
+    infoBox: {
+        borderWidth: 1,
+        borderColor: '#d1d5dc',
+        borderStyle: 'solid',
+        marginBottom: 12,
+    },
+    infoTitle: {
+        backgroundColor: '#e2e8f0',
+        padding: 6,
+        fontSize: 9,
+        fontWeight: 'bold',
+        color: '#334155',
+    },
+    infoRow: {
+        flexDirection: 'row',
+        borderTopWidth: 1,
+        borderTopColor: '#d1d5dc',
+    },
+    infoLabel: {
+        width: '40%',
+        padding: 6,
+        fontSize: 8,
+        color: '#334155',
+        borderRightWidth: 1,
+        borderRightColor: '#d1d5dc',
+        backgroundColor: '#f8fafc',
+    },
+    infoValue: {
+        width: '60%',
+        padding: 6,
+        fontSize: 8,
+        color: '#334155',
+    },
 });
 
-const PDF = () => (
+const PDF = ({
+    description,
+    title,
+    items = [],
+    sectionTotal = 0,
+    totals,
+    orderInfo,
+    calcNumber,
+    calcDate,
+}: PDFProps) => (
     <Document language='ru' title='Предварительная смета ПРОФИКС НН'>
         <Page size='A4' style={styles.page}>
             <View style={styles.header}>
@@ -398,24 +361,111 @@ const PDF = () => (
                     </View>
                 </View>
                 <View style={styles.headerRight}>
-                    <Text style={styles.objectTitle}>Объект</Text>
-                    <Text style={styles.objectValue}>-</Text>
+                    <Text style={styles.objectTitle}>Расчет</Text>
+                    <Text style={styles.objectValue}>
+                        № {calcNumber || '-'}
+                    </Text>
+                    <Text style={styles.companyInfo}>
+                        Дата: {calcDate || '-'}
+                    </Text>
                 </View>
             </View>
-            <Text style={styles.title}>Расчет стоимости бетонного пола</Text>
 
+            <Text style={styles.title}>Расчет стоимости бетонного пола</Text>
             <Text style={styles.description}>
-                Предварительный расчет бетонных полов по уплотненному песку, со
-                следующими работами:
+                {description ||
+                    'Предварительный расчет бетонных полов. Параметры и работы указаны ниже.'}
             </Text>
 
-            <Table
-                title='Раздел 1. Оплата труда (с учетом налогов)'
-                columns={tableColumns}
-                data={laborData}
-                totalAmount='715 450,00'
-            />
+            {orderInfo && (
+                <View style={styles.infoBox}>
+                    <Text style={styles.infoTitle}>Информация о заказе</Text>
+                    {renderOrderInfoRows(orderInfo).map((row) => (
+                        <View key={row.label} style={styles.infoRow}>
+                            <Text style={styles.infoLabel}>{row.label}</Text>
+                            <Text style={styles.infoValue}>{row.value}</Text>
+                        </View>
+                    ))}
+                </View>
+            )}
+
+            <View style={styles.section}>
+                <Text style={styles.sectionHeader}>
+                    {title || 'Раздел 1. Оплата труда (с учетом налогов)'}
+                </Text>
+
+                <View style={[styles.tableRow, styles.tableHeader]}>
+                    {tableColumns.map((column) => (
+                        <Text
+                            key={column.key}
+                            style={[
+                                styles.tableCell,
+                                {
+                                    width: column.width,
+                                    color: '#fff',
+                                    fontWeight: '500',
+                                },
+                            ]}>
+                            {column.label}
+                        </Text>
+                    ))}
+                </View>
+
+                {items.map((item, index) => (
+                    <View
+                        key={`${item.id}-${index}`}
+                        style={[
+                            styles.tableRow,
+                            index % 2 === 1 ? { backgroundColor: '#fbf9fa' } : {},
+                        ]}>
+                        <Text style={[styles.tableCell, { width: '5%' }]}>{item.id}</Text>
+                        <Text style={[styles.tableCell, { width: '30%' }]}>{item.name}</Text>
+                        <Text style={[styles.tableCell, { width: '8%' }]}>{formatNumber(item.volume)}</Text>
+                        <Text style={[styles.tableCell, { width: '5%' }]}>{item.unit}</Text>
+                        <Text style={[styles.tableCell, { width: '16%' }]}>{formatCurrency(item.price)}</Text>
+                        <Text style={[styles.tableCell, { width: '16%' }]}>{formatCurrency(item.total)}</Text>
+                        <Text style={[styles.tableCell, { width: '20%' }]}>{item.note}</Text>
+                    </View>
+                ))}
+
+                <View style={[styles.tableRow, { backgroundColor: '#c6eaef' }]}>
+                    <Text style={[styles.tableCell, { width: '64%', fontWeight: 'bold' }]}>
+                        Итого по разделу
+                    </Text>
+                    <Text style={[styles.tableCell, { width: '36%', fontWeight: 'bold' }]}>
+                        {formatCurrency(sectionTotal)}
+                    </Text>
+                </View>
+            </View>
+
+            {totals && (
+                <View style={styles.summaryBox}>
+                    <View style={styles.summaryRow}>
+                        <Text style={styles.summaryLabel}>Итого по разделам</Text>
+                        <Text style={styles.summaryValue}>{formatCurrency(totals.subtotal)}</Text>
+                    </View>
+                    <View style={styles.summaryRow}>
+                        <Text style={styles.summaryLabel}>Транспортные расходы</Text>
+                        <Text style={styles.summaryValue}>{formatCurrency(totals.transport)}</Text>
+                    </View>
+                    <View style={styles.summaryRow}>
+                        <Text style={styles.summaryLabel}>Прочие накладные</Text>
+                        <Text style={styles.summaryValue}>{formatCurrency(totals.overheads)}</Text>
+                    </View>
+                    <View style={styles.summaryRow}>
+                        <Text style={styles.summaryLabel}>Сметная прибыль</Text>
+                        <Text style={styles.summaryValue}>{formatCurrency(totals.profit)}</Text>
+                    </View>
+                    <View style={[styles.summaryRow, styles.summaryTotal]}>
+                        <Text style={[styles.summaryLabel, { fontWeight: 'bold' }]}>Итого</Text>
+                        <Text style={[styles.summaryValue, { fontWeight: 'bold' }]}>
+                            {formatCurrency(totals.grandTotal)}
+                        </Text>
+                    </View>
+                </View>
+            )}
         </Page>
     </Document>
 );
+
 export default PDF;

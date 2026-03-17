@@ -6,9 +6,9 @@ const Radio = (props: radioTypes) => {
         <div className='radio'>
             <input
                 className='radio__input'
-                checked={props.checked === props.name}
+                checked={props.checked === props.value}
                 type='radio'
-                name={props.name}
+                name={props.groupName || props.name || 'group'}
                 value={props.value}
                 id={props.id}
                 onChange={props.onChange}

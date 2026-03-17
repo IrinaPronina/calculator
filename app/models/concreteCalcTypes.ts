@@ -12,8 +12,21 @@ export interface CalculateRequest {
     area: number;
     base: BaseType;
     thickness: number | 'auto';
+    preparation?: number | 'no';
+    concrete_grade?: number;
+    fiber?: number | 'no';
+    pump?: 'yes' | 'no';
+    topping_amount?: number;
     reinforcement?: ReinforcementType;
     topping?: 'yes' | 'no';
+    reinforcement_single_fitting?: number;
+    reinforcement_single_cell?: number;
+    reinforcement_double_fitting?: number;
+    reinforcement_double_fitting2?: number;
+    reinforcement_double_cell?: number;
+    reinforcement_grid_fitting?: number;
+    reinforcement_grid_cell?: number;
+    reinforcement_fiber?: number;
 }
 
 export interface ServiceItem {
@@ -36,6 +49,7 @@ export interface OfferTotals {
 }
 
 export interface CalculateResponseData {
+    description: string;
     section: {
         title: string;
         items: ServiceItem[];

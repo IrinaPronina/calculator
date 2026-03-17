@@ -12,6 +12,6 @@ export interface inputTypes {
   maxLength?: number;
   minLength?: number;
   onChange: (value: string) => void;
-  max?: Date;
-  min?: Date;
+  max?: number;
+  min?: number;
 }

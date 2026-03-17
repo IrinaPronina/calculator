@@ -32,7 +32,11 @@ export default async function RootLayout({
         <html
             lang='ru'
             suppressHydrationWarning
-            className={`${exo2.variable} ${geistMono.variable} h-full`}>
+            className={
+                !isPDFRoute
+                    ? `${exo2.variable} ${geistMono.variable}`
+                    : `${exo2.variable} ${geistMono.variable} h-full`
+            }>
             <body suppressHydrationWarning className='h-full'>
                 {!isPDFRoute && <Header />}
                 <main

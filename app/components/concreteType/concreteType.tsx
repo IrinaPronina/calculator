@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import { useEffect, useState } from 'react';
 import Button from '../Simple/Button/Button';
 import GeneralTable from '../GeneralTable/GeneralTable';
 import PayTable from '../PayTable/PayTable';
@@ -30,13 +30,182 @@ interface ConcreteTypeProps {
     settings: SettingsType;
 }
 
+const toComparableSettings = (settings: SettingsType) =>
+    JSON.stringify({
+        general: settings.general,
+        pay: settings.pay,
+        materials: settings.materials,
+        exp: settings.exp,
+        formula: settings.formula,
+    });
+
 const ConcreteType = (props: ConcreteTypeProps) => {
-    const [activeTab, setActiveTab] = React.useState('general');
+    const [activeTab, setActiveTab] = useState('general');
+    const [draftSettings, setDraftSettings] = useState<SettingsType>(
+        props.settings,
+    );
+    const [savedSettings, setSavedSettings] = useState<SettingsType>(
+        props.settings,
+    );
+    const [isSaving, setIsSaving] = useState(false);
+    const [saveMessage, setSaveMessage] = useState('');
+    const isDirty =
+        toComparableSettings(draftSettings) !== toComparableSettings(savedSettings);
 
     const handleClickTab = (value: string) => {
         setActiveTab(value);
     };
-    console.log(props.settings);
+
+    useEffect(() => {
+        setDraftSettings(props.settings);
+        setSavedSettings(props.settings);
+    }, [props.settings]);
+
+    useEffect(() => {
+        if (!isDirty) {
+            return;
+        }
+
+        const confirmText =
+            'Есть несохраненные изменения. Вы уверены, что хотите уйти со страницы?';
+
+        const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+            event.preventDefault();
+            event.returnValue = '';
+        };
+
+        const handleDocumentClick = (event: MouseEvent) => {
+            const target = event.target as HTMLElement | null;
+            const anchor = target?.closest('a[href]') as HTMLAnchorElement | null;
+            if (!anchor) {
+                return;
+            }
+
+            const href = anchor.getAttribute('href');
+            if (!href || href.startsWith('#') || anchor.target === '_blank') {
+                return;
+            }
+
+            if (!window.confirm(confirmText)) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        document.addEventListener('click', handleDocumentClick, true);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+            document.removeEventListener('click', handleDocumentClick, true);
+        };
+    }, [isDirty]);
+
+    const handleChangeGeneral = (
+        patch: Partial<{ rate: number; overheads: number; profit: number }>,
+    ) => {
+        setDraftSettings((prev) => ({
+            ...prev,
+            general: {
+                ...prev.general,
+                ...patch,
+            },
+        }));
+    };
+
+    const handleItemChange = (
+        section: 'pay' | 'materials' | 'exp',
+        id: string,
+        patch: { price?: number; increase?: number },
+    ) => {
+        setDraftSettings((prev) => ({
+            ...prev,
+            [section]: prev[section].map((item) =>
+                item.id === id ? { ...item, ...patch } : item,
+            ),
+        }));
+    };
+
+    const handleSave = async () => {
+        setIsSaving(true);
+        setSaveMessage('');
+
+        try {
+            const putSettings = async (payload: SettingsType) => {
+                const response = await fetch('/api/settings', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                const json: {
+                    status: 'success' | 'error';
+                    data?: { version: number; updatedAt: string };
+                    errors?: string[];
+                } = await response.json();
+
+                return { response, json };
+            };
+
+            const payload: SettingsType = { ...draftSettings };
+            let { response, json } = await putSettings(payload);
+
+            if (response.status === 409) {
+                const latestResponse = await fetch('/api/settings', {
+                    method: 'GET',
+                    cache: 'no-store',
+                });
+                const latestJson: {
+                    status: 'success' | 'error';
+                    data?: SettingsType;
+                    errors?: string[];
+                } = await latestResponse.json();
+
+                if (latestResponse.ok && latestJson.status === 'success' && latestJson.data) {
+                    const retryPayload: SettingsType = {
+                        ...payload,
+                        version: latestJson.data.version,
+                    };
+                    ({ response, json } = await putSettings(retryPayload));
+                }
+            }
+
+            const saveResult: {
+                status: 'success' | 'error';
+                data?: { version: number; updatedAt: string };
+                errors?: string[];
+            } = json;
+
+            if (!response.ok || saveResult.status !== 'success' || !saveResult.data) {
+                throw new Error(
+                    saveResult.errors?.join(' ') || 'Ошибка сохранения настроек',
+                );
+            }
+
+            setDraftSettings((prev) => ({
+                ...prev,
+                version: saveResult.data?.version,
+                updatedAt: saveResult.data?.updatedAt,
+            }));
+            setSavedSettings((prev) => ({
+                ...prev,
+                ...draftSettings,
+                version: saveResult.data?.version,
+                updatedAt: saveResult.data?.updatedAt,
+            }));
+            setSaveMessage('Настройки сохранены');
+        } catch (error) {
+            const msg =
+                error instanceof Error
+                    ? error.message
+                    : 'Ошибка сохранения настроек';
+            setSaveMessage(msg);
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
     return (
         <div className='flex flex-col gap-6 w-full'>
@@ -55,17 +224,49 @@ const ConcreteType = (props: ConcreteTypeProps) => {
                     size={32}
                     variant={'primary'}
                     type={'button'}
+                    onClick={handleSave}
+                    disabled={isSaving || !isDirty}
                     children={'Сохранить'}
                     backgroundSecondary={false}></Button>
             </div>
+            {isDirty ? (
+                <div className='text-sm text-amber-700'>
+                    Есть несохраненные изменения
+                </div>
+            ) : null}
+            {saveMessage ? (
+                <div className='text-sm text-neutral-700'>{saveMessage}</div>
+            ) : null}
             {activeTab === 'general' && (
-                <GeneralTable settings={props.settings} />
+                <GeneralTable
+                    settings={draftSettings}
+                    onChange={handleChangeGeneral}
+                />
             )}
             {activeTab === 'material' && (
-                <MaterialTable settings={props.settings} />
+                <MaterialTable
+                    settings={draftSettings}
+                    onItemChange={(id, patch) =>
+                        handleItemChange('materials', id, patch)
+                    }
+                />
             )}
-            {activeTab === 'pay' && <PayTable settings={props.settings} />}
-            {activeTab === 'exp' && <ExpTable settings={props.settings} />}
+            {activeTab === 'pay' && (
+                <PayTable
+                    settings={draftSettings}
+                    onItemChange={(id, patch) =>
+                        handleItemChange('pay', id, patch)
+                    }
+                />
+            )}
+            {activeTab === 'exp' && (
+                <ExpTable
+                    settings={draftSettings}
+                    onItemChange={(id, patch) =>
+                        handleItemChange('exp', id, patch)
+                    }
+                />
+            )}
         </div>
     );
 };

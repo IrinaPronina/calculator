@@ -1,10 +1,13 @@
 import React from 'react';
-import InputNumber from '../Simple/Input/InputNumber';
 import { SettingsType } from '@/app/models/adminDataTypes';
 import TableItem from '../tableItem/TableItem';
 
 interface ExpTableProps {
     settings: SettingsType;
+    onItemChange: (
+        id: string,
+        patch: { price?: number; increase?: number },
+    ) => void;
 }
 
 const ExpTable = (props: ExpTableProps) => {
@@ -27,6 +30,7 @@ const ExpTable = (props: ExpTableProps) => {
                             name={item.name}
                             price={item.price}
                             increase={item.increase}
+                            onChange={props.onItemChange}
                         />
                     ))}
                 </tbody>

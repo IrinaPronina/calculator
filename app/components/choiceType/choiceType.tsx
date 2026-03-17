@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import { useState } from 'react';
 import Tab from '../Simple/Tab/Tab';
 import ConcreteType from '../concreteType/concreteType';
 import { SettingsType } from '@/app/models/adminDataTypes';
@@ -10,7 +10,7 @@ interface ChoiceTypeProps {
 }
 
 const ChoiceType = (props: ChoiceTypeProps) => {
-    const [activeTab, setActiveTab] = React.useState<string>('concrete');
+    const [activeTab, setActiveTab] = useState<string>('concrete');
 
     const handleTabClick = (value: string) => {
         setActiveTab(value);

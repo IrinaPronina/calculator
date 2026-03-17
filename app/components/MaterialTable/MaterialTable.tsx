@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { SettingsType } from '@/app/models/adminDataTypes';
 import TableItem from '../tableItem/TableItem';
 
 interface MaterialTableProps {
     settings: SettingsType;
+    onItemChange: (
+        id: string,
+        patch: { price?: number; increase?: number },
+    ) => void;
 }
 
 const MaterialTable = (props: MaterialTableProps) => {
@@ -26,6 +30,7 @@ const MaterialTable = (props: MaterialTableProps) => {
                             name={item.name}
                             price={item.price}
                             increase={item.increase}
+                            onChange={props.onItemChange}
                         />
                     ))}
                 </tbody>

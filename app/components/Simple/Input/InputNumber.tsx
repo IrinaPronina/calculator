@@ -14,6 +14,8 @@ const InputNumber = React.forwardRef<HTMLInputElement, inputTypes>((props, ref) 
     disabled,
     maxLength,
     minLength,
+    min,
+    max,
     size,
     onChange,
   } = props;
@@ -28,6 +30,11 @@ const InputNumber = React.forwardRef<HTMLInputElement, inputTypes>((props, ref) 
       ref={ref}
       type="number"
       value={value}
+      onKeyDown={(event) => {
+        if (event.key === '-' || event.key === '+' || event.key === 'e' || event.key === 'E') {
+          event.preventDefault();
+        }
+      }}
       onChange={(event) => onChange(event.target.value)}
       id={id}
       name={name}
@@ -36,6 +43,8 @@ const InputNumber = React.forwardRef<HTMLInputElement, inputTypes>((props, ref) 
       disabled={disabled}
       maxLength={maxLength}
       minLength={minLength}
+      min={min}
+      max={max}
       autoFocus={autoFocus}
     />
   );
