@@ -40,11 +40,19 @@ interface IRequest {
 interface Request {
     area: number;
     base: 'base_concrete' | 'base_sand' | 'base_rubble';
+    preparation: number | null; //подготовка
     reinforcement: 'single' | 'double' | 'grid' | 'fiber' | 'auto';
+    //  reinforcement_single_fitting;
+    //  reinforcement_single_cell;
+    //  reinforcement_double_fitting;
+    //  reinforcement_double_fitting2;
+    //  reinforcement_double_cell;
+    //  reinforcement_fiber;
     thickness: number;
-    cutting_step: number;
+    cutting_step: number | null;
     concrete_grade: number; // марка бетона
-    topping: number;
+    microfiber: number | null;
+    topping: number | null;
     pump: boolean; //бетононасос да/нет
 }
 

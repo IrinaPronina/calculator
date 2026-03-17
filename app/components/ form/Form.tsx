@@ -181,7 +181,7 @@ const Form = ({ settings, loading }: FormProps) => {
                 </div>
                 <Info
                     area={area}
-                    reinforcement={base}
+                    reinforcement={'Авто'}
                     base={base}
                     thickness={thickness}
                     // preparation={preparation}
