@@ -651,13 +651,32 @@ const getReinforcementAuto = (
     return 0;
 };
 
+const calcPriceWithIncrease = (basePrice: number, increase: number): number => {
+    const rate = Number(basePrice);
+    const markup = Number(increase);
+
+    if (!Number.isFinite(rate)) {
+        return 0;
+    }
+
+    if (!Number.isFinite(markup)) {
+        return rate;
+    }
+
+    return rate + (rate * markup) / 100;
+};
+
 const getPriceMap = (settings: SettingsType): Map<string, number> => {
     const pairs: Array<[string, number]> = [];
-    settings.pay.forEach((item) => pairs.push([item.id, Number(item.price)]));
-    settings.materials.forEach((item) =>
-        pairs.push([item.id, Number(item.price)]),
+    settings.pay.forEach((item) =>
+        pairs.push([item.id, calcPriceWithIncrease(item.price, item.increase)]),
     );
-    settings.exp.forEach((item) => pairs.push([item.id, Number(item.price)]));
+    settings.materials.forEach((item) =>
+        pairs.push([item.id, calcPriceWithIncrease(item.price, item.increase)]),
+    );
+    settings.exp.forEach((item) =>
+        pairs.push([item.id, calcPriceWithIncrease(item.price, item.increase)]),
+    );
     return new Map(pairs);
 };
 

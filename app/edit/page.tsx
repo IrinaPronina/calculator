@@ -12,7 +12,8 @@ const DEFAULT_SETTINGS: SettingsType = {
 };
 
 async function fetchSettings() {
-    const fallbackMessage = 'База данных недоступна. Используются настройки по умолчанию.';
+    const fallbackMessage =
+        'База данных недоступна. Используются настройки по умолчанию.';
     try {
         const hdrs = await headers();
         const protocol = hdrs.get('x-forwarded-proto') || 'http';
@@ -35,7 +36,7 @@ async function fetchSettings() {
             errors?: string[];
             warnings?: string[];
         } = await response.json();
-
+        console.log(json);
         if (json.status !== 'success' || !json.data) {
             console.error(
                 'Error fetching settings:',

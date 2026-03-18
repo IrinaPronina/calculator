@@ -12,6 +12,8 @@ export interface inputTypes {
   maxLength?: number;
   minLength?: number;
   onChange: (value: string) => void;
+  onBlur?: (value: string) => void;
   max?: number;
   min?: number;
+  step?: number | 'any';
 }
