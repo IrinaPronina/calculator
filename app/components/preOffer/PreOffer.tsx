@@ -288,8 +288,14 @@ const PreOffer = ({
                     })}
             </div>
             <div className='mb-8'>
-                {sections.map((section) => (
-                    <div key={section.key} className='mb-6'>
+                {sections.map((section) => {
+                    const sectionTotal = section.items.reduce(
+                        (sum, item) => sum + item.total,
+                        0,
+                    );
+
+                    return (
+                        <div key={section.key} className='mb-6'>
                         <div className='bg-slate-700 text-white px-4 py-3 font-bold rounded-t-sm'>
                             {section.title}
                         </div>
@@ -344,11 +350,21 @@ const PreOffer = ({
                                             </td>
                                         </tr>
                                     ))}
+                                    <tr className='bg-[var(--light-primary)] font-bold'>
+                                        <td colSpan={5} className='table-td'>
+                                            Итого по разделу
+                                        </td>
+                                        <td className='table-td'>
+                                            {formatCurrency(sectionTotal)}
+                                        </td>
+                                        <td className='table-td'></td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-                ))}
+                        </div>
+                    );
+                })}
             </div>
 
             <div className='mx-4 mb-8 overflow-x-auto'>

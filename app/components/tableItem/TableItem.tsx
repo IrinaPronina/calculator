@@ -11,15 +11,35 @@ interface TableItemProps {
     onChange: (id: string, patch: { price?: number; increase?: number }) => void;
 }
 
+const toDisplayValue = (value: number): string => String(value).replace('.', ',');
+
+const sanitizeDecimalInput = (value: string): string =>
+    value.replace(/[^0-9.,]/g, '').replace(/([.,].*)[.,]/g, '$1');
+
 const TableItem = (props: TableItemProps) => {
-    const handleChangeIncrease = (value: string) => {
+    const [increaseInput, setIncreaseInput] = React.useState<string>(
+        toDisplayValue(props.increase),
+    );
+    const [priceInput, setPriceInput] = React.useState<string>(
+        toDisplayValue(props.price),
+    );
+
+    React.useEffect(() => {
+        setIncreaseInput(toDisplayValue(props.increase));
+    }, [props.increase]);
+
+    React.useEffect(() => {
+        setPriceInput(toDisplayValue(props.price));
+    }, [props.price]);
+
+    const commitIncrease = (value: string) => {
         const normalized = numberInputValue(value);
         props.onChange(props.id, {
             increase: normalized.length > 0 ? Number(normalized) : 0,
         });
     };
 
-    const handleChangePrice = (value: string) => {
+    const commitPrice = (value: string) => {
         const normalized = numberInputValue(value);
         props.onChange(props.id, {
             price: normalized.length > 0 ? Number(normalized) : 0,
@@ -32,18 +52,20 @@ const TableItem = (props: TableItemProps) => {
             <td>{props.name}</td>
             <td>
                 <InputNumber
-                    type={'number'}
+                    type={'text'}
                     size={32}
-                    value={props.increase.toString()}
-                    onChange={handleChangeIncrease}
+                    value={increaseInput}
+                    onChange={(value) => setIncreaseInput(sanitizeDecimalInput(value))}
+                    onBlur={(value) => commitIncrease(value)}
                 />
             </td>
             <td>
                 <InputNumber
-                    type={'number'}
+                    type={'text'}
                     size={32}
-                    value={props.price.toString()}
-                    onChange={handleChangePrice}
+                    value={priceInput}
+                    onChange={(value) => setPriceInput(sanitizeDecimalInput(value))}
+                    onBlur={(value) => commitPrice(value)}
                 />
             </td>
         </tr>

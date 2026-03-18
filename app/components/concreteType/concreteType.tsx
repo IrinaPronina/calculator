@@ -30,6 +30,13 @@ interface ConcreteTypeProps {
     settings: SettingsType;
 }
 
+type EditableRow = {
+    id: string;
+    name: string;
+    price: number;
+    increase: number;
+};
+
 const toComparableSettings = (settings: SettingsType) =>
     JSON.stringify({
         general: settings.general,
@@ -104,6 +111,9 @@ const ConcreteType = (props: ConcreteTypeProps) => {
     const handleChangeGeneral = (
         patch: Partial<{ rate: number; overheads: number; profit: number }>,
     ) => {
+        if (saveMessage) {
+            setSaveMessage('');
+        }
         setDraftSettings((prev) => ({
             ...prev,
             general: {
@@ -118,6 +128,9 @@ const ConcreteType = (props: ConcreteTypeProps) => {
         id: string,
         patch: { price?: number; increase?: number },
     ) => {
+        if (saveMessage) {
+            setSaveMessage('');
+        }
         setDraftSettings((prev) => ({
             ...prev,
             [section]: prev[section].map((item) =>
@@ -149,7 +162,49 @@ const ConcreteType = (props: ConcreteTypeProps) => {
                 return { response, json };
             };
 
-            const payload: SettingsType = { ...draftSettings };
+            const buildSectionPayload = (
+                baseRows: EditableRow[],
+                draftRows: EditableRow[],
+            ): EditableRow[] => {
+                const byId = new Map(draftRows.map((row) => [row.id, row]));
+                return baseRows.map((base) => {
+                    const draft = byId.get(base.id);
+                    return {
+                        id: base.id,
+                        name: base.name,
+                        price: draft ? Number(draft.price) : Number(base.price),
+                        increase: draft
+                            ? Number(draft.increase)
+                            : Number(base.increase),
+                    };
+                });
+            };
+
+            if (
+                savedSettings.pay.length === 0 ||
+                savedSettings.materials.length === 0 ||
+                savedSettings.exp.length === 0
+            ) {
+                throw new Error(
+                    'Справочники pay/materials/exp пустые. Сначала восстановите данные миграцией.',
+                );
+            }
+
+            const payload: SettingsType = {
+                ...savedSettings,
+                general: {
+                    rate: Number(draftSettings.general.rate),
+                    overheads: Number(draftSettings.general.overheads),
+                    profit: Number(draftSettings.general.profit),
+                },
+                pay: buildSectionPayload(savedSettings.pay, draftSettings.pay),
+                materials: buildSectionPayload(
+                    savedSettings.materials,
+                    draftSettings.materials,
+                ),
+                exp: buildSectionPayload(savedSettings.exp, draftSettings.exp),
+                version: savedSettings.version,
+            };
             let { response, json } = await putSettings(payload);
 
             if (response.status === 409) {
@@ -191,7 +246,7 @@ const ConcreteType = (props: ConcreteTypeProps) => {
             }));
             setSavedSettings((prev) => ({
                 ...prev,
-                ...draftSettings,
+                ...payload,
                 version: saveResult.data?.version,
                 updatedAt: saveResult.data?.updatedAt,
             }));
@@ -219,7 +274,7 @@ const ConcreteType = (props: ConcreteTypeProps) => {
                     />
                 ))}
             </div>
-            <div className='concrete-type__btn'>
+            <div className='concrete-type__btn flex items-center gap-4 flex-wrap'>
                 <Button
                     size={32}
                     variant={'primary'}
@@ -228,15 +283,15 @@ const ConcreteType = (props: ConcreteTypeProps) => {
                     disabled={isSaving || !isDirty}
                     children={'Сохранить'}
                     backgroundSecondary={false}></Button>
+                {isDirty ? (
+                    <div className='text-sm text-amber-700'>
+                        Есть несохраненные изменения
+                    </div>
+                ) : null}
+                {saveMessage ? (
+                    <div className='text-sm text-neutral-700'>{saveMessage}</div>
+                ) : null}
             </div>
-            {isDirty ? (
-                <div className='text-sm text-amber-700'>
-                    Есть несохраненные изменения
-                </div>
-            ) : null}
-            {saveMessage ? (
-                <div className='text-sm text-neutral-700'>{saveMessage}</div>
-            ) : null}
             {activeTab === 'general' && (
                 <GeneralTable
                     settings={draftSettings}

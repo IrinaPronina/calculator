@@ -1,5 +1,8 @@
 export const numberInputValue = (value: string): string => {
-    return value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+    return value
+        .replace(',', '.')
+        .replace(/[^0-9.]/g, '')
+        .replace(/(\..*)\./g, '$1');
 };
 
 /** GLOBALS **/

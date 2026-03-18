@@ -12,6 +12,43 @@ const DEFAULT_SETTINGS: SettingsType = {
     version: 0,
 };
 
+type PriceRow = { id: string; name: string; price: number; increase: number };
+
+const toNumberOrFallback = (value: unknown, fallback: number): number => {
+    const num = Number(value);
+    return Number.isFinite(num) ? num : fallback;
+};
+
+const updateNumericOnly = (
+    currentRows: PriceRow[],
+    incomingRows: unknown,
+): PriceRow[] => {
+    const incomingArray = Array.isArray(incomingRows) ? incomingRows : [];
+    const incomingById = new Map<string, Record<string, unknown>>();
+
+    incomingArray.forEach((row) => {
+        if (!row || typeof row !== 'object') {
+            return;
+        }
+        const item = row as Record<string, unknown>;
+        incomingById.set(String(item.id ?? ''), item);
+    });
+
+    return currentRows.map((row) => {
+        const incoming = incomingById.get(row.id);
+        if (!incoming) {
+            return row;
+        }
+
+        return {
+            ...row,
+            // Only numeric fields are mutable from /edit
+            price: toNumberOrFallback(incoming.price, row.price),
+            increase: toNumberOrFallback(incoming.increase, row.increase),
+        };
+    });
+};
+
 export async function GET() {
     try {
         const { db } = await getDb(clientPromise, null);
@@ -50,14 +87,60 @@ export async function PUT(req: Request) {
             );
         }
 
+        const currentPay = Array.isArray(current?.pay)
+            ? (current.pay as PriceRow[])
+            : [];
+        const currentMaterials = Array.isArray(current?.materials)
+            ? (current.materials as PriceRow[])
+            : [];
+        const currentExp = Array.isArray(current?.exp)
+            ? (current.exp as PriceRow[])
+            : [];
+
+        if (
+            currentPay.length === 0 ||
+            currentMaterials.length === 0 ||
+            currentExp.length === 0
+        ) {
+            return NextResponse.json(
+                {
+                    status: 'error',
+                    errors: [
+                        'Справочники pay/materials/exp пустые. Сначала восстановите данные миграцией.',
+                    ],
+                },
+                { status: 400 },
+            );
+        }
+
         const now = new Date().toISOString();
         const nextVersion = currentVersion + 1;
+        const currentGeneral =
+            current?.general && typeof current.general === 'object'
+                ? (current.general as {
+                      rate?: number;
+                      overheads?: number;
+                      profit?: number;
+                  })
+                : DEFAULT_SETTINGS.general;
 
         const toSave: SettingsType = {
-            general: payload.general,
-            pay: payload.pay,
-            materials: payload.materials,
-            exp: payload.exp,
+            // In general we only allow changing numeric values.
+            general: {
+                rate: toNumberOrFallback(payload.general?.rate, currentGeneral.rate ?? 0),
+                overheads: toNumberOrFallback(
+                    payload.general?.overheads,
+                    DEFAULT_SETTINGS.general.overheads,
+                ),
+                profit: toNumberOrFallback(
+                    payload.general?.profit,
+                    currentGeneral.profit ?? 0,
+                ),
+            },
+            // For tariff sections only numeric fields are mutable.
+            pay: updateNumericOnly(currentPay, payload.pay),
+            materials: updateNumericOnly(currentMaterials, payload.materials),
+            exp: updateNumericOnly(currentExp, payload.exp),
             formula: payload.formula,
             version: nextVersion,
             updatedAt: now,
@@ -79,6 +162,9 @@ export async function PUT(req: Request) {
         return NextResponse.json({
             status: 'success',
             data: { version: nextVersion, updatedAt: now },
+            warnings: [
+                'Обновлены только разрешенные числовые поля: pay/materials/exp.price+increase, general.rate+overheads+profit.',
+            ],
         });
     } catch {
         return NextResponse.json(
