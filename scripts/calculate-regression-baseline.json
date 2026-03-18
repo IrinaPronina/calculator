@@ -1,0 +1,93 @@
+{
+  "generatedAt": "2026-03-18T12:02:34.563Z",
+  "baseUrl": "http://localhost:3001",
+  "epsilon": 0.01,
+  "cases": {
+    "grid_concrete_no_topping": {
+      "status": "success",
+      "totals": {
+        "subtotal": 908273.108,
+        "transport": 27248.19324,
+        "overheads": 27248.19324,
+        "profit": 454136.554,
+        "grandTotal": 1416906.04848,
+        "unitPrice": 2833.8120969600004
+      },
+      "watched": {
+        "1601": {
+          "volume": 45,
+          "price": 464.4,
+          "total": 20898
+        },
+        "7053": null,
+        "0100": {
+          "volume": 500,
+          "price": 95.175,
+          "total": 47587.5
+        }
+      }
+    },
+    "auto_sand_with_pump": {
+      "status": "success",
+      "totals": {
+        "subtotal": 4448337.576,
+        "transport": 133450.12728000002,
+        "overheads": 133450.12728000002,
+        "profit": 2224168.788,
+        "grandTotal": 6939406.618559999,
+        "unitPrice": 5782.838848799999
+      },
+      "watched": {
+        "1028": null,
+        "0154": {
+          "volume": 1200,
+          "price": 47.925,
+          "total": 57510
+        },
+        "0101": {
+          "volume": 1200,
+          "price": 203.175,
+          "total": 243810
+        },
+        "0928": {
+          "volume": 3,
+          "price": 60000,
+          "total": 180000
+        }
+      }
+    },
+    "double_rubble_with_topping": {
+      "status": "success",
+      "totals": {
+        "subtotal": 11089949.695,
+        "transport": 332698.49085,
+        "overheads": 332698.49085,
+        "profit": 5544974.8475,
+        "grandTotal": 17300321.5242,
+        "unitPrice": 5766.7738414
+      },
+      "watched": {
+        "1221": {
+          "volume": 10500,
+          "price": 31.5,
+          "total": 330750
+        },
+        "0104": {
+          "volume": 3000,
+          "price": 291.06,
+          "total": 873180
+        },
+        "0147": {
+          "volume": 3000,
+          "price": 297.675,
+          "total": 893025
+        },
+        "0928": {
+          "volume": 6,
+          "price": 60000,
+          "total": 360000
+        }
+      }
+    }
+  }
+}

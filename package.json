@@ -7,7 +7,8 @@
         "build": "next build",
         "start": "next start",
         "lint": "next lint",
-        "test:calculate-validation": "node ./scripts/check-calculate-validation.mjs"
+        "test:calculate-validation": "node ./scripts/check-calculate-validation.mjs",
+        "test:calculate-regression": "node ./scripts/check-calculate-regression.mjs"
     },
     "dependencies": {
         "@react-pdf/renderer": "^4.3.0",
