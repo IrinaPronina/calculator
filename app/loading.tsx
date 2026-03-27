@@ -1,11 +1,9 @@
 import React from 'react';
 
+import Loader from './components/Simple/Loader/Loader';
+
 const Loading = () => {
-    return (
-        <div>
-            <p>Loading...</p>
-        </div>
-    );
+    return <Loader />;
 };
 
 export default Loading;

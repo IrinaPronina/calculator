@@ -1,5 +1,5 @@
 export interface inputTypes {
-  type: 'number' | 'text';
+  type: 'number' | 'text' | 'password';
   size?: 32;
   value: string;
   className?: string;
