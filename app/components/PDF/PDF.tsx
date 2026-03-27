@@ -17,17 +17,17 @@ import {
 
 Font.register({
     family: 'Roboto',
-    src: '/fonts/Roboto-Regular.woff',
+    src: '/fonts/Calibri-Regular.ttf',
     fontWeight: 400,
 });
 Font.register({
     family: 'Roboto',
-    src: '/fonts/Roboto-Medium.woff',
+    src: '/fonts/Calibri-Bold.ttf',
     fontWeight: 500,
 });
 Font.register({
     family: 'Roboto',
-    src: '/fonts/Roboto-Light.woff',
+    src: '/fonts/Calibri-Light.ttf',
     fontWeight: 300,
 });
 
@@ -51,6 +51,67 @@ const tableColumns = [
     { key: 'total', label: 'Всего', width: '16%' },
     { key: 'note', label: 'Примечание', width: '20%' },
 ];
+
+type PdfSection = {
+    key: 'works' | 'materials' | 'machines';
+    title: string;
+    items: ServiceItem[];
+};
+
+const WORK_CODES = new Set([
+    '0154',
+    '0101',
+    '0156',
+    '0100',
+    '0105',
+    '0104',
+    '0135',
+    '0112',
+    '0155',
+    '0145',
+    '0146',
+    '0147',
+    '0102',
+    '0110',
+    '0140',
+    '0130',
+    '0109',
+    '0517',
+]);
+
+const MACHINE_CODES = new Set(['0162', '0928']);
+
+const splitItemsToSections = (items: ServiceItem[]): PdfSection[] => {
+    const works: ServiceItem[] = [];
+    const materials: ServiceItem[] = [];
+    const machines: ServiceItem[] = [];
+
+    items.forEach((item) => {
+        if (MACHINE_CODES.has(item.id)) {
+            machines.push(item);
+            return;
+        }
+
+        if (WORK_CODES.has(item.id)) {
+            works.push(item);
+            return;
+        }
+
+        materials.push(item);
+    });
+
+    const sections: PdfSection[] = [
+        { key: 'works', title: 'Раздел 1. Работы', items: works },
+        { key: 'materials', title: 'Раздел 2. Материалы', items: materials },
+        {
+            key: 'machines',
+            title: 'Раздел 3. Эксплуатация машин и механизмов',
+            items: machines,
+        },
+    ];
+
+    return sections.filter((section) => section.items.length > 0);
+};
 
 const formatCurrency = (value: number): string => {
     return value.toLocaleString('ru-RU', {
@@ -96,13 +157,9 @@ const renderOrderInfoRows = (orderInfo: Required<CalculateRequest>) => {
             ? `${autoThicknessMap[orderInfo.base]} мм (авто)`
             : `${orderInfo.thickness} мм`;
     const preparationText =
-        orderInfo.preparation === 'no'
-            ? 'Нет'
-            : `${orderInfo.preparation} мм`;
+        orderInfo.preparation === 'no' ? 'Нет' : `${orderInfo.preparation} мм`;
     const microfiberText =
-        orderInfo.fiber === 'no'
-            ? 'Нет'
-            : `${orderInfo.fiber} кг/м³`;
+        orderInfo.fiber === 'no' ? 'Нет' : `${orderInfo.fiber} кг/м³`;
     const toppingText =
         orderInfo.topping === 'no'
             ? 'Нет'
@@ -111,7 +168,10 @@ const renderOrderInfoRows = (orderInfo: Required<CalculateRequest>) => {
 
     return [
         { label: 'Площадь пола', value: `${orderInfo.area} м²` },
-        { label: 'Ваше основание', value: baseLabelMap[orderInfo.base] || orderInfo.base },
+        {
+            label: 'Ваше основание',
+            value: baseLabelMap[orderInfo.base] || orderInfo.base,
+        },
         {
             label: 'Армирование',
             value:
@@ -134,14 +194,15 @@ const styles = StyleSheet.create({
     page: {
         backgroundColor: '#fff',
         padding: 30,
+        fontFamily: 'Roboto',
     },
     section: {
         marginBottom: 20,
     },
     sectionHeader: {
-        backgroundColor: '#475569',
-        color: 'white',
-        padding: 10,
+        backgroundColor: '#fff',
+        color: '#4a5565',
+        padding: 4,
         fontSize: 10,
         fontWeight: '500',
         fontFamily: 'Roboto',
@@ -269,6 +330,7 @@ const styles = StyleSheet.create({
         color: '#334155',
         borderRightWidth: 1,
         borderRightColor: '#d1d5dc',
+        fontFamily: 'Roboto',
     },
     summaryValue: {
         width: '30%',
@@ -276,6 +338,7 @@ const styles = StyleSheet.create({
         fontSize: 9,
         color: '#334155',
         textAlign: 'right',
+        fontFamily: 'Roboto',
     },
     summaryTotal: {
         backgroundColor: '#c6eaef',
@@ -290,8 +353,9 @@ const styles = StyleSheet.create({
         backgroundColor: '#e2e8f0',
         padding: 6,
         fontSize: 9,
-        fontWeight: 'bold',
+        fontWeight: 500,
         color: '#334155',
+        fontFamily: 'Roboto',
     },
     infoRow: {
         flexDirection: 'row',
@@ -306,12 +370,14 @@ const styles = StyleSheet.create({
         borderRightWidth: 1,
         borderRightColor: '#d1d5dc',
         backgroundColor: '#f8fafc',
+        fontFamily: 'Roboto',
     },
     infoValue: {
         width: '60%',
         padding: 6,
         fontSize: 8,
         color: '#334155',
+        fontFamily: 'Roboto',
     },
 });
 
@@ -377,88 +443,156 @@ const PDF = ({
                     'Предварительный расчет бетонных полов. Параметры и работы указаны ниже.'}
             </Text>
 
-            {orderInfo && (
-                <View style={styles.infoBox}>
-                    <Text style={styles.infoTitle}>Информация о заказе</Text>
-                    {renderOrderInfoRows(orderInfo).map((row) => (
-                        <View key={row.label} style={styles.infoRow}>
-                            <Text style={styles.infoLabel}>{row.label}</Text>
-                            <Text style={styles.infoValue}>{row.value}</Text>
-                        </View>
-                    ))}
-                </View>
-            )}
+            {splitItemsToSections(items).map((section) => {
+                const sectionTotalValue = section.items.reduce(
+                    (sum, item) => sum + item.total,
+                    0,
+                );
 
-            <View style={styles.section}>
-                <Text style={styles.sectionHeader}>
-                    {title || 'Раздел 1. Оплата труда (с учетом налогов)'}
-                </Text>
-
-                <View style={[styles.tableRow, styles.tableHeader]}>
-                    {tableColumns.map((column) => (
-                        <Text
-                            key={column.key}
-                            style={[
-                                styles.tableCell,
-                                {
-                                    width: column.width,
-                                    color: '#fff',
-                                    fontWeight: '500',
-                                },
-                            ]}>
-                            {column.label}
+                return (
+                    <View key={section.key} style={styles.section}>
+                        <Text style={styles.sectionHeader}>
+                            {section.title}
                         </Text>
-                    ))}
-                </View>
 
-                {items.map((item, index) => (
-                    <View
-                        key={`${item.id}-${index}`}
-                        style={[
-                            styles.tableRow,
-                            index % 2 === 1 ? { backgroundColor: '#fbf9fa' } : {},
-                        ]}>
-                        <Text style={[styles.tableCell, { width: '5%' }]}>{item.id}</Text>
-                        <Text style={[styles.tableCell, { width: '30%' }]}>{item.name}</Text>
-                        <Text style={[styles.tableCell, { width: '8%' }]}>{formatNumber(item.volume)}</Text>
-                        <Text style={[styles.tableCell, { width: '5%' }]}>{item.unit}</Text>
-                        <Text style={[styles.tableCell, { width: '16%' }]}>{formatCurrency(item.price)}</Text>
-                        <Text style={[styles.tableCell, { width: '16%' }]}>{formatCurrency(item.total)}</Text>
-                        <Text style={[styles.tableCell, { width: '20%' }]}>{item.note}</Text>
+                        <View style={[styles.tableRow, styles.tableHeader]}>
+                            {tableColumns.map((column) => (
+                                <Text
+                                    key={`${section.key}-${column.key}`}
+                                    style={[
+                                        styles.tableCell,
+                                        {
+                                            width: column.width,
+                                            color: '#fff',
+                                            fontWeight: '500',
+                                        },
+                                    ]}>
+                                    {column.label}
+                                </Text>
+                            ))}
+                        </View>
+
+                        {section.items.map((item, index) => (
+                            <View
+                                key={`${section.key}-${item.id}-${index}`}
+                                style={[
+                                    styles.tableRow,
+                                    index % 2 === 1
+                                        ? { backgroundColor: '#fbf9fa' }
+                                        : {},
+                                ]}>
+                                <Text
+                                    style={[styles.tableCell, { width: '5%' }]}>
+                                    {item.id}
+                                </Text>
+                                <Text
+                                    style={[
+                                        styles.tableCell,
+                                        { width: '30%' },
+                                    ]}>
+                                    {item.name}
+                                </Text>
+                                <Text
+                                    style={[styles.tableCell, { width: '8%' }]}>
+                                    {formatNumber(item.volume)}
+                                </Text>
+                                <Text
+                                    style={[styles.tableCell, { width: '5%' }]}>
+                                    {item.unit}
+                                </Text>
+                                <Text
+                                    style={[
+                                        styles.tableCell,
+                                        { width: '16%' },
+                                    ]}>
+                                    {formatCurrency(item.price)}
+                                </Text>
+                                <Text
+                                    style={[
+                                        styles.tableCell,
+                                        { width: '16%' },
+                                    ]}>
+                                    {formatCurrency(item.total)}
+                                </Text>
+                                <Text
+                                    style={[
+                                        styles.tableCell,
+                                        { width: '20%' },
+                                    ]}>
+                                    {item.note}
+                                </Text>
+                            </View>
+                        ))}
+
+                        <View
+                            style={[
+                                styles.tableRow,
+                                { backgroundColor: '#c6eaef' },
+                            ]}>
+                            <Text
+                                style={[
+                                    styles.tableCell,
+                                    { width: '64%', fontWeight: 'bold' },
+                                ]}>
+                                Итого по разделу
+                            </Text>
+                            <Text
+                                style={[
+                                    styles.tableCell,
+                                    { width: '36%', fontWeight: 'bold' },
+                                ]}>
+                                {formatCurrency(sectionTotalValue)}
+                            </Text>
+                        </View>
                     </View>
-                ))}
-
-                <View style={[styles.tableRow, { backgroundColor: '#c6eaef' }]}>
-                    <Text style={[styles.tableCell, { width: '64%', fontWeight: 'bold' }]}>
-                        Итого по разделу
-                    </Text>
-                    <Text style={[styles.tableCell, { width: '36%', fontWeight: 'bold' }]}>
-                        {formatCurrency(sectionTotal)}
-                    </Text>
-                </View>
-            </View>
+                );
+            })}
 
             {totals && (
                 <View style={styles.summaryBox}>
                     <View style={styles.summaryRow}>
-                        <Text style={styles.summaryLabel}>Итого по разделам</Text>
-                        <Text style={styles.summaryValue}>{formatCurrency(totals.subtotal)}</Text>
+                        <Text style={styles.summaryLabel}>
+                            Итого по разделам
+                        </Text>
+                        <Text style={styles.summaryValue}>
+                            {formatCurrency(totals.subtotal)}
+                        </Text>
                     </View>
                     <View style={styles.summaryRow}>
-                        <Text style={styles.summaryLabel}>Транспортные расходы</Text>
-                        <Text style={styles.summaryValue}>{formatCurrency(totals.transport)}</Text>
+                        <Text style={styles.summaryLabel}>
+                            Транспортные расходы
+                        </Text>
+                        <Text style={styles.summaryValue}>
+                            {formatCurrency(totals.transport)}
+                        </Text>
                     </View>
                     <View style={styles.summaryRow}>
-                        <Text style={styles.summaryLabel}>Прочие накладные</Text>
-                        <Text style={styles.summaryValue}>{formatCurrency(totals.overheads)}</Text>
+                        <Text style={styles.summaryLabel}>
+                            Прочие накладные
+                        </Text>
+                        <Text style={styles.summaryValue}>
+                            {formatCurrency(totals.overheads)}
+                        </Text>
                     </View>
                     <View style={styles.summaryRow}>
                         <Text style={styles.summaryLabel}>Сметная прибыль</Text>
-                        <Text style={styles.summaryValue}>{formatCurrency(totals.profit)}</Text>
+                        <Text style={styles.summaryValue}>
+                            {formatCurrency(totals.profit)}
+                        </Text>
                     </View>
                     <View style={[styles.summaryRow, styles.summaryTotal]}>
-                        <Text style={[styles.summaryLabel, { fontWeight: 'bold' }]}>Итого</Text>
-                        <Text style={[styles.summaryValue, { fontWeight: 'bold' }]}>
+                        <Text
+                            style={[
+                                styles.summaryLabel,
+                                { fontWeight: 'bold' },
+                            ]}>
+                            Итого
+                        </Text>
+                        <Text
+                            style={[
+                                styles.summaryValue,
+                                { fontWeight: 'bold' },
+                            ]}>
                             {formatCurrency(totals.grandTotal)}
                         </Text>
                     </View>

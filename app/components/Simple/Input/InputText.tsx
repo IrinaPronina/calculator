@@ -4,6 +4,7 @@ import { inputTypes } from './types';
 
 const InputText = React.forwardRef<HTMLInputElement, inputTypes>((props, ref) => {
   const {
+    type,
     value,
     className,
     id,
@@ -26,7 +27,7 @@ const InputText = React.forwardRef<HTMLInputElement, inputTypes>((props, ref) =>
     <input
       className={styles.join(' ')}
       ref={ref}
-      type="text"
+      type={type ?? 'text'}
       value={value}
       onChange={(event) => onChange(event.target.value)}
       id={id}

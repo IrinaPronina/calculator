@@ -1,0 +1,86 @@
+.offer-loader {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    width: 140px;
+    height: 176px;
+}
+
+.offer-loader__cell {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: offerLoaderCellScale 1.25s ease-in-out infinite;
+}
+
+.offer-loader__cell--1 {
+    animation-delay: 0s;
+}
+.offer-loader__cell--2 {
+    animation-delay: 0.16s;
+}
+.offer-loader__cell--3 {
+    animation-delay: 0.32s;
+}
+.offer-loader__cell--4 {
+    animation-delay: 0.48s;
+}
+.offer-loader__cell--5 {
+    animation-delay: 0.64s;
+}
+
+.offer-loader__text {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    color: #3b5563;
+    animation: offerLoaderTextBlink 1.2s ease-in-out infinite;
+}
+
+@keyframes offerLoaderFloat {
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-9px);
+    }
+}
+
+@keyframes offerLoaderCellScale {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.08);
+    }
+}
+
+@keyframes offerLoaderPathGlow {
+    0%,
+    100% {
+        opacity: 0.88;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+@keyframes offerLoaderTextBlink {
+    0%,
+    100% {
+        opacity: 0.5;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .offer-loader__svg,
+    .offer-loader__cell,
+    .offer-loader__text {
+        animation: none;
+    }
+}

@@ -8,6 +8,7 @@ import {
     CalculateResponseData,
     ServiceItem,
 } from '@/app/models/concreteCalcTypes';
+import OfferLoader from '../Simple/OfferLoader/OfferLoader';
 
 interface PreOfferProps {
     area: string;
@@ -38,6 +39,20 @@ type PreOfferSection = {
     items: ServiceItem[];
 };
 
+const PREOFFER_TABLE_COLUMNS: Array<{
+    key: string;
+    label: string;
+    width: string;
+}> = [
+    { key: 'id', label: 'Арт.', width: '5%' },
+    { key: 'name', label: 'Наименование', width: '35%' },
+    { key: 'volume', label: 'Объем', width: '8%' },
+    { key: 'unit', label: 'изм.', width: '5%' },
+    { key: 'price', label: 'Стоимость, руб.', width: '14%' },
+    { key: 'total', label: 'Всего', width: '15%' },
+    { key: 'note', label: 'Примечание', width: '18%' },
+];
+
 const WORK_CODES = new Set([
     '0154',
     '0101',
@@ -60,6 +75,20 @@ const WORK_CODES = new Set([
 ]);
 
 const MACHINE_CODES = new Set(['0162', '0928']);
+
+const PdfLoadingSync = ({
+    loading,
+    onChange,
+}: {
+    loading: boolean;
+    onChange: (value: boolean) => void;
+}) => {
+    React.useEffect(() => {
+        onChange(loading);
+    }, [loading, onChange]);
+
+    return null;
+};
 
 const splitItemsToSections = (items: ServiceItem[]): PreOfferSection[] => {
     const works: ServiceItem[] = [];
@@ -114,6 +143,7 @@ const PreOffer = ({
     preparation,
 }: PreOfferProps) => {
     const [isLoading, setIsLoading] = React.useState(true);
+    const [isPdfLoading, setIsPdfLoading] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
     const [result, setResult] = React.useState<CalculateResponseData | null>(
         null,
@@ -138,6 +168,7 @@ const PreOffer = ({
     React.useEffect(() => {
         const runCalculation = async () => {
             setIsLoading(true);
+            setIsPdfLoading(false);
             setError(null);
 
             try {
@@ -245,8 +276,8 @@ const PreOffer = ({
 
     if (isLoading) {
         return (
-            <div className='max-w-7xl mx-auto bg-white rounded-sm shadow-lg p-8'>
-                <div className='text-center text-gray-500'>Калькулирую...</div>
+            <div className='text-center text-gray-500'>
+                <OfferLoader />
             </div>
         );
     }
@@ -264,110 +295,136 @@ const PreOffer = ({
     const sections = splitItemsToSections(result.section.items);
 
     return (
-        <div className='max-w-7xl mx-auto bg-white rounded-sm shadow-lg'>
-            <div className='mx-4 pt-4 pb-2 text-sm text-neutral-700'>
-                {result.description
-                    .split('\n')
-                    .filter((line) => line.trim().length > 0)
-                    .map((line, index) => {
-                        const isMainParam =
-                            line.startsWith('Средняя толщина полов:') ||
-                            line.startsWith('Общая площадь полов:');
+        <div className='relative'>
+            {isPdfLoading ? (
+                <div className='absolute inset-0 z-40 flex items-center justify-center bg-white/85 backdrop-blur-[1px]'>
+                    <div className='text-center text-gray-500'>
+                        <OfferLoader />
+                    </div>
+                </div>
+            ) : null}
+            <div className='max-w-7xl mx-auto bg-white rounded-sm shadow-lg'>
+                <div className='mx-4 pt-4 pb-2 text-sm text-neutral-700'>
+                    {result.description
+                        .split('\n')
+                        .filter((line) => line.trim().length > 0)
+                        .map((line, index) => {
+                            const isMainParam =
+                                line.startsWith('Средняя толщина полов:') ||
+                                line.startsWith('Общая площадь полов:');
 
-                        if (isMainParam) {
-                            return (
-                                <p
-                                    key={`${line}-${index}`}
-                                    className='bg-[var(--light-primary)] font-Exo2Bold text-neutral-800 px-2 py-1 my-1 inline-block'>
-                                    {line}
-                                </p>
-                            );
-                        }
+                            if (isMainParam) {
+                                return (
+                                    <p
+                                        key={`${line}-${index}`}
+                                        className='bg-[var(--light-primary)] font-Exo2Bold text-neutral-800 px-2 py-1 my-1 inline-block'>
+                                        {line}
+                                    </p>
+                                );
+                            }
 
-                        return <p key={`${line}-${index}`}>{line}</p>;
+                            return <p key={`${line}-${index}`}>{line}</p>;
+                        })}
+                </div>
+                <div className='mb-8'>
+                    {sections.map((section) => {
+                        const sectionTotal = section.items.reduce(
+                            (sum, item) => sum + item.total,
+                            0,
+                        );
+
+                        return (
+                            <div key={section.key} className='mb-6'>
+                                <div className='bg-slate-700 text-white px-4 py-3 font-bold rounded-t-sm'>
+                                    {section.title}
+                                </div>
+                                <div className='overflow-x-auto'>
+                                    <table className='w-full table-fixed border-collapse border border-gray-300'>
+                                        <colgroup>
+                                            {PREOFFER_TABLE_COLUMNS.map(
+                                                (column) => (
+                                                    <col
+                                                        key={`${section.key}-${column.key}`}
+                                                        style={{
+                                                            width: column.width,
+                                                        }}
+                                                    />
+                                                ),
+                                            )}
+                                        </colgroup>
+                                        <thead>
+                                            <tr className='bg-[var(--color-primary)] text-white'>
+                                                {PREOFFER_TABLE_COLUMNS.map(
+                                                    (column) => (
+                                                        <th
+                                                            key={`${section.key}-head-${column.key}`}
+                                                            className='table-td text-left font-bold'>
+                                                            {column.label}
+                                                        </th>
+                                                    ),
+                                                )}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {section.items.map(
+                                                (item, index) => (
+                                                    <tr
+                                                        key={`${section.key}-${item.id}-${index}`}
+                                                        className={
+                                                            index % 2 === 0
+                                                                ? 'hover:bg-gray-50'
+                                                                : 'bg-gray-50 hover:bg-gray-100'
+                                                        }>
+                                                        <td className='table-td'>
+                                                            {item.id}
+                                                        </td>
+                                                        <td className='table-td'>
+                                                            {item.name}
+                                                        </td>
+                                                        <td className='table-td'>
+                                                            {item.volume}
+                                                        </td>
+                                                        <td className='table-td'>
+                                                            {item.unit}
+                                                        </td>
+                                                        <td className='table-td'>
+                                                            {formatCurrency(
+                                                                item.price,
+                                                            )}
+                                                        </td>
+                                                        <td className='table-td'>
+                                                            {formatCurrency(
+                                                                item.total,
+                                                            )}
+                                                        </td>
+                                                        <td className='table-td text-xs text-gray-600 italic'>
+                                                            {item.note}
+                                                        </td>
+                                                    </tr>
+                                                ),
+                                            )}
+                                            <tr className='bg-[var(--light-primary)] font-bold'>
+                                                <td
+                                                    colSpan={5}
+                                                    className='table-td'>
+                                                    Итого по разделу
+                                                </td>
+                                                <td className='table-td'>
+                                                    {formatCurrency(
+                                                        sectionTotal,
+                                                    )}
+                                                </td>
+                                                <td className='table-td'></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        );
                     })}
+                </div>
             </div>
-            <div className='mb-8'>
-                {sections.map((section) => {
-                    const sectionTotal = section.items.reduce(
-                        (sum, item) => sum + item.total,
-                        0,
-                    );
-
-                    return (
-                        <div key={section.key} className='mb-6'>
-                        <div className='bg-slate-700 text-white px-4 py-3 font-bold rounded-t-sm'>
-                            {section.title}
-                        </div>
-                        <div className='overflow-x-auto'>
-                            <table className='w-full border-collapse border border-gray-300'>
-                                <thead>
-                                    <tr className='bg-[var(--color-primary)] text-white'>
-                                        <th className='table-td text-left font-bold'>
-                                            Арт.
-                                        </th>
-                                        <th className='table-td text-left font-bold'>
-                                            Наименование
-                                        </th>
-                                        <th className='table-td text-left font-bold'>
-                                            Объем
-                                        </th>
-                                        <th className='table-td text-left font-bold'>
-                                            изм.
-                                        </th>
-                                        <th className='table-td text-left font-bold'>
-                                            Стоимость, руб.
-                                        </th>
-                                        <th className='table-td text-left font-bold'>
-                                            Всего
-                                        </th>
-                                        <th className='table-td text-left font-bold'>
-                                            Примечание
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {section.items.map((item, index) => (
-                                        <tr
-                                            key={`${section.key}-${item.id}-${index}`}
-                                            className={
-                                                index % 2 === 0
-                                                    ? 'hover:bg-gray-50'
-                                                    : 'bg-gray-50 hover:bg-gray-100'
-                                            }>
-                                            <td className='table-td'>{item.id}</td>
-                                            <td className='table-td'>{item.name}</td>
-                                            <td className='table-td'>{item.volume}</td>
-                                            <td className='table-td'>{item.unit}</td>
-                                            <td className='table-td'>
-                                                {formatCurrency(item.price)}
-                                            </td>
-                                            <td className='table-td'>
-                                                {formatCurrency(item.total)}
-                                            </td>
-                                            <td className='table-td text-sm text-gray-600 italic'>
-                                                {item.note}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    <tr className='bg-[var(--light-primary)] font-bold'>
-                                        <td colSpan={5} className='table-td'>
-                                            Итого по разделу
-                                        </td>
-                                        <td className='table-td'>
-                                            {formatCurrency(sectionTotal)}
-                                        </td>
-                                        <td className='table-td'></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        </div>
-                    );
-                })}
-            </div>
-
-            <div className='mx-4 mb-8 overflow-x-auto'>
+            <div className='mb-8 overflow-x-auto'>
                 <table className='w-full border-collapse border border-gray-300'>
                     <tbody>
                         <tr>
@@ -403,8 +460,7 @@ const PreOffer = ({
                     </tbody>
                 </table>
             </div>
-
-            <div className='mx-4 mb-8'>
+            <div className='mb-8'>
                 <PDFDownloadLink
                     document={
                         <PDF

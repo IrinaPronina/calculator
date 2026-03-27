@@ -2,6 +2,7 @@
 import ChoiceType from '../components/choiceType/choiceType';
 import { SettingsType } from '@/app/models/adminDataTypes';
 import { headers } from 'next/headers';
+import Link from 'next/link';
 
 const DEFAULT_SETTINGS: SettingsType = {
     general: { rate: 0, overheads: 0, profit: 0 },
@@ -60,6 +61,13 @@ async function EditPage() {
 
     return (
         <>
+            <div className='mb-4 flex justify-end'>
+                <Link
+                    href='/'
+                    className='text-sm font-medium text-sky-700 underline underline-offset-2 hover:text-sky-800'>
+                    Перейти к рассчету
+                </Link>
+            </div>
             {warning ? (
                 <div className='mb-4 rounded border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800'>
                     {warning}

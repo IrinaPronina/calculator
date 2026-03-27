@@ -14,6 +14,19 @@ const DEFAULT_SETTINGS: SettingsType = {
     version: 0,
 };
 
+const formatUpdatedDate = (isoDate?: string): string => {
+    if (!isoDate) {
+        return 'дата не указана';
+    }
+
+    const date = new Date(isoDate);
+    if (Number.isNaN(date.getTime())) {
+        return 'дата не указана';
+    }
+
+    return new Intl.DateTimeFormat('ru-RU').format(date);
+};
+
 async function fetchSettings() {
     const fallbackMessage = 'База данных недоступна. Используются настройки по умолчанию.';
     try {
@@ -27,10 +40,7 @@ async function fetchSettings() {
             dynamicBaseUrl ||
             'http://localhost:3000';
         const response = await fetch(`${baseUrl}/api/settings`, {
-            //cache for 1 day
-            next: {
-                revalidate: 86400,
-            },
+            cache: 'no-store',
         });
         if (!response.ok) {
             console.error('Error fetching settings: non-200 response');
@@ -67,6 +77,8 @@ async function Calculator() {
     const { settings, warning } = await fetchSettings();
     ConcreteCalcStore.fetchConcreteCalcSettings(settings);
     console.log(ConcreteCalcStore.settings);
+    const updatedDate = formatUpdatedDate(settings[0]?.updatedAt);
+
     return (
         <section>
             {warning ? (
@@ -75,7 +87,7 @@ async function Calculator() {
                 </div>
             ) : null}
             <h2 className='py-2.5 mb-2.5 text-2xl font-Exo2Bold text-primary md:text-3xl'>
-                Расчет стоимости бетонных полов (цены обновлены 20.06.2025г.)
+                {`Расчет стоимости бетонных полов (цены обновлены ${updatedDate} г.)`}
             </h2>
             <Form settings={settings} loading={loading} />
         </section>
