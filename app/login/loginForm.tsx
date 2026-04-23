@@ -1,10 +1,10 @@
 'use client';
+
 import React from 'react';
-import Form from 'next/form';
 import InputText from '../components/Simple/Input/InputText';
 import Button from '../components/Simple/Button/Button';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { loginAction } from '../server-actions/login-action';
+import { signIn } from 'next-auth/react';
 
 const LoginForm = () => {
     const router = useRouter();
@@ -12,6 +12,7 @@ const LoginForm = () => {
     const [login, setLogin] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [error, setError] = React.useState('');
+    const [isSubmitting, setIsSubmitting] = React.useState(false);
 
     const onChangeLogin = (v: string) => {
         setLogin(v);
@@ -23,32 +24,38 @@ const LoginForm = () => {
         if (error) setError('');
     };
 
-    const handleClickLogin = async () => {
-        const formData = new FormData();
-        formData.append('login', login);
-        formData.append('password', password);
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        if (isSubmitting) return;
 
-        const result = await loginAction(formData);
+        setIsSubmitting(true);
+        setError('');
 
-        if (result.ok) {
-            const nextPath = searchParams.get('next') || '/edit';
-            router.push(nextPath);
+        const result = await signIn('credentials', {
+            login,
+            password,
+            redirect: false,
+        });
+
+        setIsSubmitting(false);
+
+        if (!result || result.error) {
+            setError('Неверный логин или пароль');
             return;
         }
 
-        setError(result.error || 'Ошибка авторизации');
-        router.push('/notauth');
+        const nextPath = searchParams.get('next') || '/edit';
+        router.push(nextPath);
+        router.refresh();
     };
 
     return (
-        <Form
-            action={handleClickLogin}
-            className='flex flex-col mb-8 items-center'>
+        <form onSubmit={handleSubmit} className='flex flex-col mb-8 items-center'>
             <InputText
                 className='w-80 mb-3'
                 type={'text'}
                 size={32}
-                placeholder='Имя'
+                placeholder='Логин'
                 value={login}
                 onChange={onChangeLogin}
             />
@@ -70,9 +77,17 @@ const LoginForm = () => {
                 size={52}
                 variant={'primary'}
                 type={'submit'}
-                children={'Войти'}
+                children={isSubmitting ? 'Входим...' : 'Войти'}
                 backgroundSecondary={false}></Button>
-        </Form>
+            <Button
+                className='w-80 mt-2'
+                size={52}
+                variant={'secondary'}
+                type={'button'}
+                onClick={() => signIn('yandex', { callbackUrl: '/edit' })}
+                children={'Войти через Яндекс'}
+                backgroundSecondary={false}></Button>
+        </form>
     );
 };
 
