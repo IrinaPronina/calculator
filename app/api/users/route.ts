@@ -1,18 +1,17 @@
 import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
-import { getDb } from '@/app/utils/api-routes';
-import { Db } from 'mongodb';
 
 export async function GET() {
-    const { db } = await getDb(clientPromise, null);
     try {
-        return NextResponse.json(await getUsers(db));
+        const { default: clientPromise } = await import('@/lib/mongodb');
+        const client = await clientPromise;
+        const db = client.db(process.env.DB_NAME);
+        const users = await db.collection('user').find({}).toArray();
+        return NextResponse.json({ status: 'success', data: users });
     } catch (error) {
-        return NextResponse.json({ message: 'Error' });
+        console.error('GET /api/users failed:', error);
+        return NextResponse.json(
+            { status: 'error', errors: ['Ошибка получения пользователей'] },
+            { status: 500 },
+        );
     }
 }
-
-const getUsers = async (db: Db) => {
-    const user = await db.collection('user').find().toArray();
-    return user;
-};

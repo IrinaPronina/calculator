@@ -3,7 +3,7 @@ import ChoiceType from '../components/choiceType/choiceType';
 import { SettingsType } from '@/app/models/adminDataTypes';
 import { headers } from 'next/headers';
 import Link from 'next/link';
-import { logoutAction } from '../server-actions/logout-action';
+import { singOutFunc } from '../actions/auth-actions';
 
 const DEFAULT_SETTINGS: SettingsType = {
     general: { rate: 0, overheads: 0, profit: 0 },
@@ -68,7 +68,7 @@ async function EditPage() {
                     className='text-sm font-medium text-sky-700 underline underline-offset-2 hover:text-sky-800'>
                     Перейти к рассчету
                 </Link>
-                <form action={logoutAction}>
+                <form action={singOutFunc}>
                     <button
                         type='submit'
                         className='text-sm font-medium text-slate-700 underline underline-offset-2 hover:text-slate-900'>

@@ -43,7 +43,7 @@ const Header = () => {
                             />
                         }
                         onClick={() => {
-                            router.push('/login');
+                            router.push('/lk');
                         }}
                         backgroundSecondary={false}></IconButton>
                 </div>

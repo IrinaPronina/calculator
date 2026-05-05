@@ -36,20 +36,16 @@ const Button = (props: ButtonTypes) => {
         disabled,
         backgroundSecondary,
     } = props;
-    const styles = [
-        'profix-button',
-        `profix-button_${size}`,
-        `profix-button_${variant}`,
-    ];
+    const styles = ['io-button', `io-button_${size}`, `io-button_${variant}`];
     if (className) {
         styles.push(className);
     }
     if (full) {
-        styles.push('profix-full');
+        styles.push('io-full');
     }
 
     if (backgroundSecondary) {
-        styles.push('profix-button--background-secondary');
+        styles.push('io-button--background-secondary');
     }
     return (
         <button
@@ -58,10 +54,10 @@ const Button = (props: ButtonTypes) => {
             name={name}
             onClick={onClick}
             type={type}>
-            <div className='profix-button-container'>
-                <div className='profix-button-body'>
+            <div className='io-button-container'>
+                <div className='io-button-body'>
                     {iconLeft && iconLeft}
-                    <span className='profix-button--title'>{children}</span>
+                    <span className='io-button--title'>{children}</span>
                     {iconRight && iconRight}
                 </div>
             </div>

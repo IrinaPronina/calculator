@@ -26,18 +26,14 @@ const tab = (props: tabTypes) => {
         children,
         className,
     } = props;
-    const styles = [
-        'profix-tab',
-        `profix-tab_${size}`,
-        `profix-tab_${variant}`,
-    ];
+    const styles = ['io-tab', `io-tab_${size}`, `io-tab_${variant}`];
 
     if (className) {
         styles.push(className);
     }
 
     if (activeTab === eventKey) {
-        styles.push(`profix-tab_active`);
+        styles.push(`io-tab_active`);
     }
 
     return (
