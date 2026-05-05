@@ -33,19 +33,19 @@ const IconButton = (props: IconButtonTypes) => {
         backgroundSecondary,
     } = props;
     const styles = [
-        'profix-icon-button',
-        `profix-icon-button_${size}`,
-        `profix-icon-button_${variant}`,
+        'io-icon-button',
+        `io-icon-button_${size}`,
+        `io-icon-button_${variant}`,
     ];
     if (className) {
         styles.push(className);
     }
     if (full) {
-        styles.push('profix-full');
+        styles.push('io-full');
     }
 
     if (backgroundSecondary) {
-        styles.push('profix-icon-button--background-secondary');
+        styles.push('io-icon-button--background-secondary');
     }
     return (
         <button
@@ -54,8 +54,8 @@ const IconButton = (props: IconButtonTypes) => {
             name={name}
             onClick={onClick}
             type={type}>
-            <div className='profix-icon-button-container'>
-                <div className='profix-icon-button-body'>{children}</div>
+            <div className='io-icon-button-container'>
+                <div className='io-icon-button-body'>{children}</div>
             </div>
         </button>
     );

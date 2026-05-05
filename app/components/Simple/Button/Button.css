@@ -1,4 +1,4 @@
-.profix-button {
+.io-button {
     background-color: unset;
     box-sizing: border-box;
     min-width: 180px;
@@ -8,7 +8,7 @@
     text-transform: uppercase;
 }
 
-.profix-button-container {
+.io-button-container {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -16,83 +16,83 @@
     flex-grow: 1;
 }
 
-.profix-button.profix-full {
+.io-button.io-full {
     width: 100%;
 }
 
-.profix-button-body {
+.io-button-body {
     display: flex;
     align-items: center;
     flex: 1;
 }
 
-.profix-button--title {
+.io-button--title {
     font-family: 'Exo2Medium';
     font-style: normal;
     font-weight: 500;
 }
 
-.profix-button_32 {
+.io-button_32 {
     height: 32px;
     border-radius: 2px;
     padding: 6px 15px;
 }
 
-.profix-button_32 .profix-button--title {
+.io-button_32 .io-button--title {
     font-size: 16px;
     line-height: 20px;
 }
 
-.profix-button_32 .profix-button-body {
+.io-button_32 .io-button-body {
     gap: 4px;
 }
 
-.profix-button_44 {
+.io-button_44 {
     height: 44px;
     border-radius: 8px;
     padding: 10px 24px;
 }
 
-.profix-button_44 .profix-button--title {
+.io-button_44 .io-button--title {
     font-size: 17px;
     line-height: 24px;
 }
 
-.profix-button_44 .profix-button-body {
+.io-button_44 .io-button-body {
     gap: 4px;
 }
 
-.profix-button_52 {
+.io-button_52 {
     height: 52px;
     border-radius: 2px;
     padding: 14px 32px;
 }
 
-.profix-button_52 .profix-button--title {
+.io-button_52 .io-button--title {
     font-size: 16px;
     line-height: 20px;
 }
 
-.profix-button_52 .profix-button-body {
+.io-button_52 .io-button-body {
     gap: 8px;
 }
 
-.profix-button_72 {
+.io-button_72 {
     height: 72px;
     border-radius: 10px;
     padding: 24px 40px;
 }
 
-.profix-button_72 .profix-button--title {
+.io-button_72 .io-button--title {
     font-size: 20px;
     line-height: 24px;
 }
 
-.profix-button_72 .profix-button-body {
+.io-button_72 .io-button-body {
     gap: 8px;
 }
 
-.profix-button_primary {
+.io-button_primary {
     /* background-color: var(--controls-primary-active); */
     text-align: center;
     background: #54b0bf;
@@ -103,14 +103,14 @@
     z-index: 1;
     transition: all 0.3s;
 }
-.profix-button_primary .profix-button-body {
+.io-button_primary .io-button-body {
     justify-content: center;
 }
 
-.profix-button_primary:hover {
+.io-button_primary:hover {
     color: #54b0bf;
 }
-.profix-button_primary::before {
+.io-button_primary::before {
     right: -50px;
     border-right: 50px solid transparent;
     border-top: 52px solid #fff;
@@ -124,7 +124,7 @@
     transition: all 0.3s;
     z-index: -1;
 }
-.profix-button_primary::after {
+.io-button_primary::after {
     left: -50px;
     border-left: 50px solid transparent;
     border-bottom: 52px solid #fff;
@@ -138,118 +138,118 @@
     transition: all 0.3s;
     z-index: -1;
 }
-.profix-button_primary:hover::before {
+.io-button_primary:hover::before {
     -webkit-transform: translateX(-49%);
     transform: translateX(-49%);
 }
-.profix-button_primary:hover::after {
+.io-button_primary:hover::after {
     -webkit-transform: translateX(49%);
     transform: translateX(49%);
 }
 
-.profix-button_primary .profix-button--title {
+.io-button_primary .io-button--title {
     color: var(--constant_greyscale_0);
 }
 
-.profix-button_primary .fill {
+.io-button_primary .fill {
     fill: var(--constant_greyscale_0);
 }
 
-.profix-button_alternative {
+.io-button_alternative {
     background-color: var(--controls-secondary-active);
 }
 
-.profix-button_alternative .profix-button--title {
+.io-button_alternative .io-button--title {
     color: var(--text-inverted);
 }
 
-.profix-button_alternative .fill {
+.io-button_alternative .fill {
     fill: var(--text-inverted);
 }
 
-.profix-button_alwaysWhite {
+.io-button_alwaysWhite {
     background-color: #fff;
 }
 
-.profix-button_alwaysWhite .profix-button--title {
+.io-button_alwaysWhite .io-button--title {
     color: #a3a3a3;
 }
 
-.profix-button_alwaysWhite .fill {
+.io-button_alwaysWhite .fill {
     fill: 000;
 }
 
-.profix-button_secondary {
+.io-button_secondary {
     background-color: #f2f3f7;
 }
 
-.profix-button--background-secondary.profix-button_secondary {
+.io-button--background-secondary.io-button_secondary {
     background-color: var(--controls-alternative);
 }
 
-.profix-button_secondary .profix-button--title {
+.io-button_secondary .io-button--title {
     color: var(--text-primary);
 }
 
-.profix-button_secondary .fill {
+.io-button_secondary .fill {
     fill: var(--icons-primary);
 }
 
-.profix-button_ghost {
+.io-button_ghost {
     background-color: unset;
 }
 
-.profix-button_ghost .profix-button--title {
+.io-button_ghost .io-button--title {
     color: var(--text-headline);
 }
 
-.profix-button_ghost .fill {
+.io-button_ghost .fill {
     fill: var(--icons-primary);
 }
 
-.profix-button_negative {
+.io-button_negative {
     background-color: var(--controls-tertiary-active);
 }
-.profix-button--background-secondary.profix-button_negative {
+.io-button--background-secondary.io-button_negative {
     background-color: var(--controls-alternative);
 }
 
-.profix-button_negative .profix-button--title {
+.io-button_negative .io-button--title {
     color: var(--text-negative);
 }
 
-.profix-button_negative .fill {
+.io-button_negative .fill {
     fill: var(--text-negative);
 }
 
-.profix-button:focus {
+.io-button:focus {
     outline: none;
 }
 
-.profix-button:disabled {
+.io-button:disabled {
     background-color: var(--controls-inactive);
     opacity: 0.6;
     cursor: no-drop;
     border: none;
 }
 
-.profix-button:disabled .profix-button--title {
+.io-button:disabled .io-button--title {
     color: var(--text-tertiary);
 }
 
-.profix-button:disabled .fill {
+.io-button:disabled .fill {
     fill: var(--icons-secondary);
 }
 
-.profix-button.profix-loading {
+.io-button.io-loading {
     pointer-events: none;
 }
 
-.profix-button.profix-loading .profix-button-body {
+.io-button.io-loading .io-button-body {
     opacity: 0;
 }
 
-.profix-button--loader {
+.io-button--loader {
     position: absolute;
     top: 50%;
     left: 50%;
