@@ -3,12 +3,11 @@
 import React from 'react';
 import InputText from '../components/Simple/Input/InputText';
 import Button from '../components/Simple/Button/Button';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { singInFunc } from '../actions/auth-actions';
+import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 
 const LoginForm = () => {
     const router = useRouter();
-    const searchParams = useSearchParams();
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [isPasswordVisible, setIsPasswordVisible] = React.useState(false);
@@ -32,20 +31,32 @@ const LoginForm = () => {
         setIsSubmitting(true);
         setError('');
 
-        const result = await singInFunc(email, password);
+        const checkResponse = await fetch('/api/auth/check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+        });
+        const checkJson = await checkResponse.json();
 
-        setIsSubmitting(false);
-
-        if (!result || !result.ok) {
-            if (result?.code) {
-            }
-            setError(result?.error || 'Ошибка входа');
+        if (!checkResponse.ok || checkJson.status !== 'success') {
+            setIsSubmitting(false);
+            setError(checkJson?.error || 'Ошибка входа');
             return;
         }
 
-        const nextPath = searchParams.get('next') || '/edit';
-        router.push(nextPath);
-        router.refresh();
+        const signInResult = await signIn('credentials', {
+            email,
+            password,
+            redirect: false,
+        });
+
+        setIsSubmitting(false);
+        if (!signInResult || signInResult.error) {
+            setError('Ошибка входа');
+            return;
+        }
+
+        router.push('/lk');
     };
 
     return (

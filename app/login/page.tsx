@@ -1,5 +1,6 @@
 import React from 'react';
 import LoginForm from './loginForm';
+import { Suspense } from 'react';
 
 const PageLogin = () => {
     return (
@@ -8,7 +9,9 @@ const PageLogin = () => {
                 <h2 className='py-2.5 mb-3 text-2xl font-Exo2Bold text-primary md:text-3xl'>
                     Войдите в систему
                 </h2>
-                <LoginForm />
+                <Suspense fallback={<div className='text-sm text-slate-500'>Загрузка...</div>}>
+                    <LoginForm />
+                </Suspense>
             </div>
         </div>
     );

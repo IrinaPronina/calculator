@@ -6,7 +6,6 @@ import { signIn } from 'next-auth/react';
 import InputText from '../components/Simple/Input/InputText';
 import Button from '../components/Simple/Button/Button';
 import { registerSchema } from '@/app/lib/auth-schemas';
-import { registerUserFunc } from '../actions/auth-actions';
 
 const RegisterForm = () => {
     const router = useRouter();
@@ -57,11 +56,19 @@ const RegisterForm = () => {
             return;
         }
 
-        const registerResult = await registerUserFunc(email, password, name);
+        const signInResult = await signIn('credentials', {
+            email,
+            password,
+            redirect: false,
+        });
 
         setIsSubmitting(false);
-        router.push('/');
-        router.refresh();
+        if (!signInResult || signInResult.error) {
+            router.push('/login');
+            return;
+        }
+
+        router.push('/lk');
     };
 
     return (
