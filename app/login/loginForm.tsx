@@ -3,11 +3,13 @@
 import React from 'react';
 import InputText from '../components/Simple/Input/InputText';
 import Button from '../components/Simple/Button/Button';
-import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { authClient } from '@/lib/auth-client';
+import { loginSchema } from '@/app/lib/auth-schemas';
 
 const LoginForm = () => {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [isPasswordVisible, setIsPasswordVisible] = React.useState(false);
@@ -28,35 +30,34 @@ const LoginForm = () => {
         event.preventDefault();
         if (isSubmitting) return;
 
+        const parsed = loginSchema.safeParse({ email, password });
+        if (!parsed.success) {
+            setError(parsed.error.issues[0]?.message || 'Проверьте данные');
+            return;
+        }
+
         setIsSubmitting(true);
         setError('');
 
-        const checkResponse = await fetch('/api/auth/check', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
-        });
-        const checkJson = await checkResponse.json();
-
-        if (!checkResponse.ok || checkJson.status !== 'success') {
-            setIsSubmitting(false);
-            setError(checkJson?.error || 'Ошибка входа');
-            return;
-        }
-
-        const signInResult = await signIn('credentials', {
-            email,
-            password,
-            redirect: false,
+        const { error: signInError } = await authClient.signIn.email({
+            email: parsed.data.email,
+            password: parsed.data.password,
         });
 
         setIsSubmitting(false);
-        if (!signInResult || signInResult.error) {
-            setError('Ошибка входа');
+        if (signInError) {
+            // Единое сообщение: не раскрываем, существует ли пользователь.
+            setError(
+                signInError.status === 429
+                    ? 'Слишком много попыток. Попробуйте через минуту'
+                    : 'Неверный email или пароль',
+            );
             return;
         }
 
-        router.push('/lk');
+        const next = searchParams.get('next');
+        router.push(next && next.startsWith('/') ? next : '/lk');
+        router.refresh();
     };
 
     return (

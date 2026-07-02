@@ -1,32 +1,18 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@/app/auth';
-import { getUserFromDb } from '@/app/utils/user';
+import { requireSession } from '@/app/utils/auth-guards';
 
 export async function GET() {
+    const { session, response } = await requireSession();
+    if (response) {
+        return response;
+    }
+
     try {
-        const session = await auth();
-        const email = String(session?.user?.email || '').trim();
-
-        if (!email) {
-            return NextResponse.json(
-                { status: 'error', errors: ['Требуется авторизация'] },
-                { status: 401 },
-            );
-        }
-
-        const user = await getUserFromDb(email);
-        if (!user) {
-            return NextResponse.json(
-                { status: 'error', errors: ['Пользователь не найден'] },
-                { status: 404 },
-            );
-        }
-
         return NextResponse.json({
             status: 'success',
             data: {
-                name: user.name || '',
-                email: user.email || email,
+                name: session.user.name || '',
+                email: session.user.email,
             },
         });
     } catch (error) {

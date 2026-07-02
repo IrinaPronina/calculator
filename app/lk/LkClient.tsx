@@ -4,7 +4,8 @@ import Link from 'next/link';
 import React from 'react';
 import InputText from '@/app/components/Simple/Input/InputText';
 import Button from '@/app/components/Simple/Button/Button';
-import { signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { authClient } from '@/lib/auth-client';
 
 type LkClientProps = {
     initialName: string;
@@ -12,6 +13,7 @@ type LkClientProps = {
 };
 
 export default function LkClient({ initialName, initialEmail }: LkClientProps) {
+    const router = useRouter();
     const [name, setName] = React.useState(initialName);
     const [email] = React.useState(initialEmail);
     const [password, setPassword] = React.useState('');
@@ -25,7 +27,9 @@ export default function LkClient({ initialName, initialEmail }: LkClientProps) {
     const handleSignOut = async () => {
         if (isSigningOut) return;
         setIsSigningOut(true);
-        await signOut({ callbackUrl: '/login' });
+        await authClient.signOut();
+        router.push('/login');
+        router.refresh();
     };
 
     return (

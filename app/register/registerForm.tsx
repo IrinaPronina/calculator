@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
+import { authClient } from '@/lib/auth-client';
 import InputText from '../components/Simple/Input/InputText';
 import Button from '../components/Simple/Button/Button';
 import { registerSchema } from '@/app/lib/auth-schemas';
@@ -43,32 +43,27 @@ const RegisterForm = () => {
         setIsSubmitting(true);
         setError('');
 
-        const response = await fetch('/api/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email, password }),
-        });
-        const json = await response.json();
-
-        if (!response.ok || json.status !== 'success') {
-            setIsSubmitting(false);
-            setError(json?.errors?.[0] || 'Ошибка регистрации');
-            return;
-        }
-
-        const signInResult = await signIn('credentials', {
-            email,
-            password,
-            redirect: false,
+        // autoSignIn включён по умолчанию: после регистрации сессия уже есть.
+        const { error: signUpError } = await authClient.signUp.email({
+            name: parsed.data.name,
+            email: parsed.data.email,
+            password: parsed.data.password,
         });
 
         setIsSubmitting(false);
-        if (!signInResult || signInResult.error) {
-            router.push('/login');
+        if (signUpError) {
+            if (signUpError.status === 422) {
+                setError('Пользователь с таким email уже существует');
+            } else if (signUpError.status === 429) {
+                setError('Слишком много попыток. Попробуйте через минуту');
+            } else {
+                setError('Ошибка регистрации');
+            }
             return;
         }
 
         router.push('/lk');
+        router.refresh();
     };
 
     return (
