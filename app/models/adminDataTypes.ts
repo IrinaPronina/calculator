@@ -28,3 +28,12 @@ export interface SettingsType {
     version?: number;
     updatedAt?: string;
 }
+
+/** Источник, по которому считает калькулятор пользователя. */
+export type SettingsMode = 'own' | 'global';
+
+/** Личные настройки, встроенные в документ user (подход C). */
+export interface UserSettings extends SettingsType {
+    mode: SettingsMode;
+    createdAt?: string;
+}
