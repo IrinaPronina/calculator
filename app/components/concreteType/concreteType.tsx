@@ -28,6 +28,10 @@ const TabButton = (props: TabButtonTypes) => (
 
 interface ConcreteTypeProps {
     settings: SettingsType;
+    /** Только просмотр (например, шаблон администратора для обычного юзера). */
+    readOnly?: boolean;
+    /** Куда сохранять: свои настройки ('own') или глобальный шаблон ('global', admin). */
+    scope?: 'own' | 'global';
 }
 
 type EditableRow = {
@@ -144,8 +148,13 @@ const ConcreteType = (props: ConcreteTypeProps) => {
         setSaveMessage('');
 
         try {
+            const settingsUrl =
+                props.scope === 'global'
+                    ? '/api/settings?scope=global'
+                    : '/api/settings';
+
             const putSettings = async (payload: SettingsType) => {
-                const response = await fetch('/api/settings', {
+                const response = await fetch(settingsUrl, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -208,7 +217,7 @@ const ConcreteType = (props: ConcreteTypeProps) => {
             let { response, json } = await putSettings(payload);
 
             if (response.status === 409) {
-                const latestResponse = await fetch('/api/settings', {
+                const latestResponse = await fetch(settingsUrl, {
                     method: 'GET',
                     cache: 'no-store',
                 });
@@ -274,54 +283,62 @@ const ConcreteType = (props: ConcreteTypeProps) => {
                     />
                 ))}
             </div>
-            <div className='concrete-type__btn flex items-center gap-4 flex-wrap'>
-                <Button
-                    size={32}
-                    variant={'primary'}
-                    type={'button'}
-                    onClick={handleSave}
-                    disabled={isSaving || !isDirty}
-                    children={'Сохранить'}
-                    backgroundSecondary={false}></Button>
-                {isDirty ? (
-                    <div className='text-sm text-amber-700'>
-                        Есть несохраненные изменения
-                    </div>
-                ) : null}
-                {saveMessage ? (
-                    <div className='text-sm text-neutral-700'>{saveMessage}</div>
-                ) : null}
-            </div>
-            {activeTab === 'general' && (
-                <GeneralTable
-                    settings={draftSettings}
-                    onChange={handleChangeGeneral}
-                />
-            )}
-            {activeTab === 'material' && (
-                <MaterialTable
-                    settings={draftSettings}
-                    onItemChange={(id, patch) =>
-                        handleItemChange('materials', id, patch)
-                    }
-                />
-            )}
-            {activeTab === 'pay' && (
-                <PayTable
-                    settings={draftSettings}
-                    onItemChange={(id, patch) =>
-                        handleItemChange('pay', id, patch)
-                    }
-                />
-            )}
-            {activeTab === 'exp' && (
-                <ExpTable
-                    settings={draftSettings}
-                    onItemChange={(id, patch) =>
-                        handleItemChange('exp', id, patch)
-                    }
-                />
-            )}
+            {!props.readOnly ? (
+                <div className='concrete-type__btn flex items-center gap-4 flex-wrap'>
+                    <Button
+                        size={32}
+                        variant={'primary'}
+                        type={'button'}
+                        onClick={handleSave}
+                        disabled={isSaving || !isDirty}
+                        children={'Сохранить'}
+                        backgroundSecondary={false}></Button>
+                    {isDirty ? (
+                        <div className='text-sm text-amber-700'>
+                            Есть несохраненные изменения
+                        </div>
+                    ) : null}
+                    {saveMessage ? (
+                        <div className='text-sm text-neutral-700'>
+                            {saveMessage}
+                        </div>
+                    ) : null}
+                </div>
+            ) : null}
+            <fieldset
+                disabled={props.readOnly}
+                className='contents border-0 p-0 m-0'>
+                {activeTab === 'general' && (
+                    <GeneralTable
+                        settings={draftSettings}
+                        onChange={handleChangeGeneral}
+                    />
+                )}
+                {activeTab === 'material' && (
+                    <MaterialTable
+                        settings={draftSettings}
+                        onItemChange={(id, patch) =>
+                            handleItemChange('materials', id, patch)
+                        }
+                    />
+                )}
+                {activeTab === 'pay' && (
+                    <PayTable
+                        settings={draftSettings}
+                        onItemChange={(id, patch) =>
+                            handleItemChange('pay', id, patch)
+                        }
+                    />
+                )}
+                {activeTab === 'exp' && (
+                    <ExpTable
+                        settings={draftSettings}
+                        onItemChange={(id, patch) =>
+                            handleItemChange('exp', id, patch)
+                        }
+                    />
+                )}
+            </fieldset>
         </div>
     );
 };

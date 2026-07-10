@@ -4,7 +4,8 @@ import React from 'react';
 import InputText from '../components/Simple/Input/InputText';
 import Button from '../components/Simple/Button/Button';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { singInFunc } from '../actions/auth-actions';
+import { authClient } from '@/lib/auth-client';
+import { loginSchema } from '@/app/lib/auth-schemas';
 
 const LoginForm = () => {
     const router = useRouter();
@@ -29,22 +30,33 @@ const LoginForm = () => {
         event.preventDefault();
         if (isSubmitting) return;
 
-        setIsSubmitting(true);
-        setError('');
-
-        const result = await singInFunc(email, password);
-
-        setIsSubmitting(false);
-
-        if (!result || !result.ok) {
-            if (result?.code) {
-            }
-            setError(result?.error || 'Ошибка входа');
+        const parsed = loginSchema.safeParse({ email, password });
+        if (!parsed.success) {
+            setError(parsed.error.issues[0]?.message || 'Проверьте данные');
             return;
         }
 
-        const nextPath = searchParams.get('next') || '/edit';
-        router.push(nextPath);
+        setIsSubmitting(true);
+        setError('');
+
+        const { error: signInError } = await authClient.signIn.email({
+            email: parsed.data.email,
+            password: parsed.data.password,
+        });
+
+        setIsSubmitting(false);
+        if (signInError) {
+            // Единое сообщение: не раскрываем, существует ли пользователь.
+            setError(
+                signInError.status === 429
+                    ? 'Слишком много попыток. Попробуйте через минуту'
+                    : 'Неверный email или пароль',
+            );
+            return;
+        }
+
+        const next = searchParams.get('next');
+        router.push(next && next.startsWith('/') ? next : '/lk');
         router.refresh();
     };
 
