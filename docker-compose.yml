@@ -1,0 +1,23 @@
+services:
+    app:
+        build: .
+        restart: unless-stopped
+        ports:
+            - '3000:3000'
+        environment:
+            DB_URL: mongodb://mongo:27017
+            DB_NAME: ${DB_NAME:-calculator}
+            BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+            BETTER_AUTH_URL: ${BETTER_AUTH_URL}
+        depends_on:
+            - mongo
+
+    mongo:
+        image: mongo:7
+        restart: unless-stopped
+        volumes:
+            - mongo-data:/data/db
+        # порт наружу не пробрасываем — база доступна только внутри compose-сети
+
+volumes:
+    mongo-data:

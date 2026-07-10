@@ -1,13 +1,11 @@
-// require('dotenv').config();
+import 'dotenv/config';
 // In this file you can configure migrate-mongo
 
 const config = {
     mongodb: {
-        // TODO Change (or review) the url to your MongoDB:
-        url: 'mongodb+srv://irina:nksU8RfFRYKKzlvh@cluster0.9dkr8af.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0',
+        url: process.env.DB_URL,
 
-        // TODO Change this to your database name:
-        databaseName: 'calculator',
+        databaseName: process.env.DB_NAME || 'calculator',
 
         options: {
             useNewUrlParser: true, // removes a deprecation warning when connecting

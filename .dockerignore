@@ -1,0 +1,9 @@
+node_modules
+.next
+.git
+.env*
+*.tsbuildinfo
+.DS_Store
+docs
+construction-cost-table.html
+npm-debug.log*
