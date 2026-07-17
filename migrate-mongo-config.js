@@ -7,12 +7,7 @@ const config = {
 
         databaseName: process.env.DB_NAME || 'calculator',
 
-        options: {
-            useNewUrlParser: true, // removes a deprecation warning when connecting
-            useUnifiedTopology: true, // removes a deprecating warning when connecting
-            //   connectTimeoutMS: 3600000, // increase connection timeout to 1 hour
-            //   socketTimeoutMS: 3600000, // increase socket timeout to 1 hour
-        },
+        options: {},
     },
 
     // The migrations dir, can be an relative or absolute path. Only edit this when really necessary.

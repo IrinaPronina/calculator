@@ -7,7 +7,9 @@ import { MongoClient } from 'mongodb';
 
 // Отдельный клиент для better-auth: mongodbAdapter требует синхронный Db.
 // Драйвер v6 подключается лениво при первой операции.
-const client = new MongoClient(process.env.DB_URL as string, {
+// Fallback-URL нужен только чтобы `next build` не падал при импорте
+// модуля без env: реального подключения на этапе сборки не происходит.
+const client = new MongoClient(process.env.DB_URL || 'mongodb://localhost:27017', {
     maxPoolSize: 10,
 });
 const db = client.db(process.env.DB_NAME);

@@ -3,21 +3,37 @@ services:
         build: .
         restart: unless-stopped
         ports:
-            - '3000:3000'
+            # Только localhost: наружу приложение отдаёт nginx.
+            # ВАЖНО: Docker обходит ufw, поэтому привязка к 127.0.0.1 обязательна.
+            - '127.0.0.1:3000:3000'
         environment:
             DB_URL: mongodb://mongo:27017
             DB_NAME: ${DB_NAME:-calculator}
             BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
             BETTER_AUTH_URL: ${BETTER_AUTH_URL}
         depends_on:
-            - mongo
+            mongo:
+                condition: service_healthy
 
     mongo:
         image: mongo:7
         restart: unless-stopped
+        # Single-node replica set: нужен better-auth для транзакций.
+        command: ['--replSet', 'rs0', '--bind_ip_all']
+        healthcheck:
+            # Инициализирует replica set при первом запуске, дальше просто проверяет статус.
+            test: >-
+                mongosh --quiet --eval
+                "try { rs.status().ok } catch (e) { rs.initiate({_id: 'rs0', members: [{_id: 0, host: 'mongo:27017'}]}).ok }"
+            interval: 10s
+            timeout: 10s
+            retries: 5
+            start_period: 15s
+        ports:
+            # Только для локальных скриптов (миграции, сброс пароля) — снаружи недоступен.
+            - '127.0.0.1:27017:27017'
         volumes:
             - mongo-data:/data/db
-        # порт наружу не пробрасываем — база доступна только внутри compose-сети
 
 volumes:
     mongo-data:
