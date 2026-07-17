@@ -22,8 +22,10 @@ async function loadEditData(): Promise<{
 
     const user = await getCurrentUser();
     if (!user) {
-        // middleware уже не пускает гостя, но на всякий случай.
-        redirect('/login?next=/edit');
+        // Гость без куки сюда не попадёт (middleware). Если попали —
+        // кука есть, а сессии в базе нет: стираем куку, иначе
+        // middleware будет гонять /login <-> /edit по кругу.
+        redirect('/api/auth/clear-stale?next=/edit');
     }
 
     try {

@@ -9,7 +9,9 @@ export default async function LkPage() {
     const email = String(session?.user?.email || '').trim();
 
     if (!email) {
-        redirect('/login');
+        // Стираем возможную протухшую куку, чтобы middleware
+        // не редиректил с /login обратно по кругу.
+        redirect('/api/auth/clear-stale?next=/lk');
     }
 
     const user = await getUserSafe(email);
