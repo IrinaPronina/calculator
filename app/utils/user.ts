@@ -1,4 +1,5 @@
 import type { UserSettings } from '@/app/models/adminDataTypes';
+import type { Branding } from '@/app/constants/branding';
 
 /**
  * Документ пользователя в коллекции user (схема better-auth).
@@ -11,6 +12,8 @@ export type SafeUser = {
     name?: string;
     emailVerified?: boolean;
     settings?: UserSettings;
+    /** Белый лейбл: логотип и реквизиты для шапки и КП. */
+    branding?: Branding;
 };
 
 const buildEmailFilter = (email: string) => {

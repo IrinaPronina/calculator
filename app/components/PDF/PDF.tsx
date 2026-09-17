@@ -5,10 +5,14 @@ import {
     View,
     Document,
     Font,
-    Link,
     StyleSheet,
 } from '@react-pdf/renderer';
-import Logo from './Logo';
+import PdfCompanyHeader from './PdfCompanyHeader';
+import {
+    DEFAULT_BRANDING,
+    brandingTitle,
+    type Branding,
+} from '@/app/constants/branding';
 import {
     CalculateRequest,
     OfferTotals,
@@ -40,6 +44,8 @@ interface PDFProps {
     orderInfo?: Required<CalculateRequest>;
     calcNumber?: string;
     calcDate?: string;
+    /** Чей бренд в шапке: по умолчанию фирменный. */
+    branding?: Branding;
 }
 
 const tableColumns = [
@@ -269,34 +275,12 @@ const styles = StyleSheet.create({
         padding: 10,
         justifyContent: 'center',
     },
-    headerSectionTitle: {
-        fontSize: 8,
-        fontFamily: 'Roboto',
-        fontWeight: 500,
-        color: '#475569',
-        marginBottom: 8,
-        textTransform: 'uppercase',
-    },
-    companyName: {
-        fontSize: 14,
-        fontFamily: 'Roboto',
-        fontWeight: 'bold',
-        color: '#475569',
-        marginBottom: 6,
-    },
     companyInfo: {
         fontSize: 8,
         fontFamily: 'Roboto',
         color: '#4a5565',
         marginBottom: 3,
         lineHeight: 1.4,
-    },
-    companyDetails: {
-        fontSize: 7,
-        fontFamily: 'Roboto',
-        color: '#64748b',
-        marginTop: 4,
-        lineHeight: 1.3,
     },
     objectTitle: {
         fontSize: 10,
@@ -390,41 +374,15 @@ const PDF = ({
     orderInfo,
     calcNumber,
     calcDate,
+    branding = DEFAULT_BRANDING,
 }: PDFProps) => (
-    <Document language='ru' title='Предварительная смета ПРОФИКС НН'>
+    <Document
+        language='ru'
+        title={`Предварительная смета ${brandingTitle(branding)}`.trim()}>
         <Page size='A4' style={styles.page}>
             <View style={styles.header}>
                 <View style={styles.headerLeft}>
-                    <Logo />
-                    <View style={{ flex: 1, marginLeft: 10 }}>
-                        <Text style={styles.headerSectionTitle}></Text>
-                        <Text style={styles.companyName}>ООО "ПРОФИКС НН"</Text>
-                        <Text style={styles.companyInfo}>
-                            Телефон:{' '}
-                            <Link
-                                href='tel:+79202520001'
-                                style={{
-                                    color: '#54b0bf',
-                                    textDecoration: 'none',
-                                }}>
-                                +79202520001
-                            </Link>
-                        </Text>
-                        <Text style={styles.companyInfo}>
-                            Email:{' '}
-                            <Link
-                                href='mailto:office@profix-nn.ru'
-                                style={{
-                                    color: '#54b0bf',
-                                    textDecoration: 'none',
-                                }}>
-                                office@profix-nn.ru
-                            </Link>
-                        </Text>
-                        <Text style={styles.companyDetails}>
-                            ИНН 5258123969 КПП 525801001 ОГРН 1155258004648
-                        </Text>
-                    </View>
+                    <PdfCompanyHeader branding={branding} />
                 </View>
                 <View style={styles.headerRight}>
                     <Text style={styles.objectTitle}>Расчет</Text>

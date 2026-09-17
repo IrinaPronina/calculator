@@ -11,7 +11,8 @@
         "test:calculate-regression": "node ./scripts/check-calculate-regression.mjs",
         "test:auth-flow": "node ./scripts/check-auth-flow.mjs",
         "test:api-protection": "node ./scripts/check-api-protection.mjs",
-        "test:rate-limit": "node ./scripts/check-rate-limit.mjs"
+        "test:rate-limit": "node ./scripts/check-rate-limit.mjs",
+        "test:branding": "node ./scripts/check-branding.mjs"
     },
     "dependencies": {
         "@react-pdf/renderer": "^4.3.0",

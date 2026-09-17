@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import IconButton from './Simple/IconButton/IconButton';
+import { DEFAULT_LOGO_SRC, DEFAULT_PHONE } from '@/app/constants/branding';
 
 type Me = { name: string; email: string };
 
@@ -61,11 +62,11 @@ const Header = () => {
         <header className='w-full shadow-md px-4'>
             <div className='mx-auto max-w-6xl flex items-center justify-between'>
                 <div className='hidden lg:block'>
-                    <a href='tel:+79202520001'>+7 (920) 252-00-01</a>
+                    <a href={DEFAULT_PHONE.href}>{DEFAULT_PHONE.display}</a>
                 </div>
                 <div className='w-auto max-w-72 m-auto lg:max-w-80 h-20'>
                     <Image
-                        src='/logo_svg.svg'
+                        src={DEFAULT_LOGO_SRC}
                         alt='Logo'
                         className='w-full h-full'
                         width={100}
