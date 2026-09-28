@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import IconButton from './Simple/IconButton/IconButton';
-import { DEFAULT_LOGO_SRC, DEFAULT_PHONE } from '@/app/constants/branding';
+import { DEFAULT_LOGO_SRC } from '@/app/constants/branding';
 
 type Me = { name: string; email: string };
 
@@ -61,9 +61,8 @@ const Header = () => {
     return (
         <header className='w-full shadow-md px-4'>
             <div className='mx-auto max-w-6xl flex items-center justify-between'>
-                <div className='hidden lg:block'>
-                    <a href={DEFAULT_PHONE.href}>{DEFAULT_PHONE.display}</a>
-                </div>
+                {/* Левая колонка пустая: держит логотип по центру. */}
+                <div className='hidden lg:block' />
                 <div className='w-auto max-w-72 m-auto lg:max-w-80 h-20'>
                     <Image
                         src={DEFAULT_LOGO_SRC}

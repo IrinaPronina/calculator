@@ -9,12 +9,15 @@ import {
     getOrCreateUserSettings,
 } from '@/app/utils/settings';
 import type { SettingsType, SettingsMode } from '@/app/models/adminDataTypes';
+import type { Branding } from '@/app/constants/branding';
+import { isBrandingFilled } from '@/app/utils/branding';
 
 async function loadEditData(): Promise<{
     settings: SettingsType;
     template: SettingsType;
     mode: SettingsMode;
     isAdmin: boolean;
+    initialBranding: Branding | null;
     warning: string;
 }> {
     const fallbackMessage =
@@ -28,6 +31,10 @@ async function loadEditData(): Promise<{
         redirect('/api/auth/clear-stale?next=/edit');
     }
 
+    const initialBranding: Branding | null = isBrandingFilled(user.branding)
+        ? user.branding
+        : null;
+
     try {
         const { db } = await getDb(clientPromise, null);
         const [settings, template] = await Promise.all([
@@ -39,6 +46,7 @@ async function loadEditData(): Promise<{
             template,
             mode: settings.mode,
             isAdmin: user.role === 'admin',
+            initialBranding,
             warning: '',
         };
     } catch (error) {
@@ -55,13 +63,15 @@ async function loadEditData(): Promise<{
             template: empty,
             mode: 'own',
             isAdmin: user.role === 'admin',
+            initialBranding,
             warning: fallbackMessage,
         };
     }
 }
 
 async function EditPage() {
-    const { settings, template, mode, isAdmin, warning } = await loadEditData();
+    const { settings, template, mode, isAdmin, initialBranding, warning } =
+        await loadEditData();
 
     return (
         <>
@@ -82,6 +92,7 @@ async function EditPage() {
                 template={template}
                 mode={mode}
                 isAdmin={isAdmin}
+                initialBranding={initialBranding}
             />
         </>
     );

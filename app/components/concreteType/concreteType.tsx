@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Button from '../Simple/Button/Button';
 import GeneralTable from '../GeneralTable/GeneralTable';
 import PayTable from '../PayTable/PayTable';
@@ -7,6 +8,12 @@ import MaterialTable from '../MaterialTable/MaterialTable';
 import ExpTable from '../ExpTable/ExpTable';
 import { SettingsType } from '@/app/models/adminDataTypes';
 import { TABS } from './tabs.data';
+import BrandingCard, {
+    measureBrandingText,
+    type BrandingSaveStatus,
+} from '../branding/BrandingCard';
+import type { Branding } from '@/app/constants/branding';
+import { isBrandingFilled } from '@/app/utils/branding';
 
 interface TabButtonTypes {
     label: string;
@@ -32,6 +39,8 @@ interface ConcreteTypeProps {
     readOnly?: boolean;
     /** Куда сохранять: свои настройки ('own') или глобальный шаблон ('global', admin). */
     scope?: 'own' | 'global';
+    /** Бренд пользователя для вкладки «Реквизиты для КП»; null — фирменный. */
+    initialBranding: Branding | null;
 }
 
 type EditableRow = {
@@ -51,6 +60,7 @@ const toComparableSettings = (settings: SettingsType) =>
     });
 
 const ConcreteType = (props: ConcreteTypeProps) => {
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState('general');
     const [draftSettings, setDraftSettings] = useState<SettingsType>(
         props.settings,
@@ -62,6 +72,141 @@ const ConcreteType = (props: ConcreteTypeProps) => {
     const [saveMessage, setSaveMessage] = useState('');
     const isDirty =
         toComparableSettings(draftSettings) !== toComparableSettings(savedSettings);
+    // Реквизиты сохраняются своей кнопкой через /api/lk/branding
+    // и не зависят от режима own/global.
+    const isBrandingTab = activeTab === 'branding';
+
+    // Черновик реквизитов живёт здесь, а не в BrandingCard: карточка
+    // размонтируется при смене вкладки и потеряла бы напечатанное.
+    const emptyBranding: Branding = { logo: null, text: '' };
+    const [draftBranding, setDraftBranding] = useState<Branding>(
+        props.initialBranding ?? emptyBranding,
+    );
+    const [savedBranding, setSavedBranding] = useState<Branding>(
+        props.initialBranding ?? emptyBranding,
+    );
+    const [isBrandingSaving, setIsBrandingSaving] = useState(false);
+    const [brandingStatus, setBrandingStatus] =
+        useState<BrandingSaveStatus>(null);
+    const isBrandingDirty =
+        JSON.stringify(draftBranding) !== JSON.stringify(savedBranding);
+    const hasUnsavedChanges = isDirty || isBrandingDirty;
+    const canSaveBranding =
+        isBrandingDirty &&
+        !isBrandingSaving &&
+        measureBrandingText(draftBranding.text).isValid;
+    // Сбрасывать есть что, только если в базе (savedBranding) что-то лежит.
+    const canResetBranding = isBrandingFilled(savedBranding) && !isBrandingSaving;
+
+    const handleBrandingChange = (patch: Partial<Branding>) => {
+        if (brandingStatus) {
+            setBrandingStatus(null);
+        }
+        setDraftBranding((prev) => ({ ...prev, ...patch }));
+    };
+
+    /**
+     * Шапка сайта берёт бренд на сервере (layout.tsx), поэтому после
+     * сохранения перечитываем серверные компоненты. Но refresh отдаёт новый
+     * props.settings, а на него подписан сброс draftSettings — несохранённые
+     * правки цен пропали бы. Поэтому обновляем, только если таблицы чистые;
+     * иначе шапка подтянется при следующем переходе.
+     */
+    const refreshHeaderIfSafe = () => {
+        if (!isDirty) {
+            router.refresh();
+        }
+    };
+
+    const handleSaveBranding = async () => {
+        if (!canSaveBranding) {
+            return;
+        }
+        setIsBrandingSaving(true);
+        setBrandingStatus(null);
+        try {
+            const response = await fetch('/api/lk/branding', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(draftBranding),
+            });
+            const json: {
+                status: 'success' | 'error';
+                data?: Branding | null;
+                errors?: string[];
+            } = await response.json();
+
+            if (!response.ok || json.status !== 'success') {
+                throw new Error(
+                    json.errors?.join(' ') || 'Не удалось сохранить реквизиты',
+                );
+            }
+
+            // Сервер возвращает нормализованный текст (без \r\n и хвостов);
+            // null — сброс на фирменные, если всё оказалось пустым.
+            const next = json.data ?? emptyBranding;
+            setDraftBranding(next);
+            setSavedBranding(next);
+            setBrandingStatus({ type: 'success', text: 'Сохранено' });
+            refreshHeaderIfSafe();
+        } catch (error) {
+            setBrandingStatus({
+                type: 'error',
+                text:
+                    error instanceof Error
+                        ? error.message
+                        : 'Не удалось сохранить реквизиты',
+            });
+        } finally {
+            setIsBrandingSaving(false);
+        }
+    };
+
+    const handleResetBranding = async () => {
+        if (!canResetBranding) {
+            return;
+        }
+        setIsBrandingSaving(true);
+        setBrandingStatus(null);
+        try {
+            const response = await fetch('/api/lk/branding', {
+                method: 'DELETE',
+            });
+            const json: { status: 'success' | 'error'; errors?: string[] } =
+                await response.json();
+            if (!response.ok || json.status !== 'success') {
+                throw new Error(
+                    json.errors?.join(' ') ||
+                        'Не удалось вернуть стандартные реквизиты',
+                );
+            }
+            setDraftBranding(emptyBranding);
+            setSavedBranding(emptyBranding);
+            setBrandingStatus({
+                type: 'success',
+                text: 'Возвращены стандартные реквизиты',
+            });
+            refreshHeaderIfSafe();
+        } catch (error) {
+            setBrandingStatus({
+                type: 'error',
+                text:
+                    error instanceof Error
+                        ? error.message
+                        : 'Не удалось вернуть стандартные реквизиты',
+            });
+        } finally {
+            setIsBrandingSaving(false);
+        }
+    };
+
+    useEffect(() => {
+        if (brandingStatus?.type !== 'success') {
+            return;
+        }
+        const timer = window.setTimeout(() => setBrandingStatus(null), 3000);
+        return () => window.clearTimeout(timer);
+    }, [brandingStatus]);
 
     const handleClickTab = (value: string) => {
         setActiveTab(value);
@@ -73,7 +218,13 @@ const ConcreteType = (props: ConcreteTypeProps) => {
     }, [props.settings]);
 
     useEffect(() => {
-        if (!isDirty) {
+        const next = props.initialBranding ?? { logo: null, text: '' };
+        setDraftBranding(next);
+        setSavedBranding(next);
+    }, [props.initialBranding]);
+
+    useEffect(() => {
+        if (!hasUnsavedChanges) {
             return;
         }
 
@@ -110,7 +261,7 @@ const ConcreteType = (props: ConcreteTypeProps) => {
             window.removeEventListener('beforeunload', handleBeforeUnload);
             document.removeEventListener('click', handleDocumentClick, true);
         };
-    }, [isDirty]);
+    }, [hasUnsavedChanges]);
 
     const handleChangeGeneral = (
         patch: Partial<{ rate: number; overheads: number; profit: number }>,
@@ -273,7 +424,7 @@ const ConcreteType = (props: ConcreteTypeProps) => {
 
     return (
         <div className='flex flex-col gap-6 w-full'>
-            <div className='flex gap-3 flex-col items-center md:flex-row'>
+            <div className='flex gap-3 flex-col items-center md:flex-row md:flex-wrap md:justify-center'>
                 {TABS.map((tab) => (
                     <TabButton
                         key={tab.label}
@@ -283,7 +434,7 @@ const ConcreteType = (props: ConcreteTypeProps) => {
                     />
                 ))}
             </div>
-            {!props.readOnly ? (
+            {!props.readOnly && !isBrandingTab ? (
                 <div className='concrete-type__btn flex items-center gap-4 flex-wrap'>
                     <Button
                         size={32}
@@ -339,6 +490,18 @@ const ConcreteType = (props: ConcreteTypeProps) => {
                     />
                 )}
             </fieldset>
+            {isBrandingTab ? (
+                <BrandingCard
+                    draft={draftBranding}
+                    onChange={handleBrandingChange}
+                    onSave={handleSaveBranding}
+                    canSave={canSaveBranding}
+                    onReset={handleResetBranding}
+                    canReset={canResetBranding}
+                    isSaving={isBrandingSaving}
+                    status={brandingStatus}
+                />
+            ) : null}
         </div>
     );
 };

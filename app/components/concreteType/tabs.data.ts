@@ -20,4 +20,8 @@ export const TABS: ITabItem[] = [
         label: 'Эксплуатация механизмов',
         title: 'exp',
     },
+    {
+        label: 'Реквизиты для КП',
+        title: 'branding',
+    },
 ];

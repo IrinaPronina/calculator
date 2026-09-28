@@ -5,8 +5,10 @@
  * 1. Без сессии GET/PUT/DELETE -> 401
  * 2. user: PUT валидный -> 200, GET возвращает то же; DELETE -> GET null
  * 3. user: невалидные логотипы/текст -> 400 (SVG, подмена байт, размер, строки)
- * 4. admin: PUT/DELETE -> 403
+ * 4. admin: PUT/DELETE -> 200 (правило одно для всех ролей)
  * 5. /api/users под admin: ключа branding в ответе нет
+ * 6. Логотип без текста -> 200, в базе text: '' (подстановка стандартного
+ *    текста — на стороне чтения, effectiveBranding, а не при записи)
  */
 import 'dotenv/config';
 import { MongoClient } from 'mongodb';
@@ -173,16 +175,31 @@ async function main() {
             check(`PUT ${name} -> 400`, res.status === 400, `got ${res.status}`);
         }
 
-        // --- 4. admin -> 403 ---
+        // --- 4. admin: то же, что и user ---
         await signUp(ADMIN_EMAIL);
         await db.collection('user').updateOne({ email: ADMIN_EMAIL }, { $set: { role: 'admin' } });
         const adminCookie = await signIn(ADMIN_EMAIL);
-        const adminPut = await api('/api/lk/branding', { method: 'PUT', cookie: adminCookie, body: { logo: null, text: 'x' } });
-        check('admin PUT -> 403', adminPut.status === 403, `got ${adminPut.status}`);
+        const adminPut = await api('/api/lk/branding', {
+            method: 'PUT', cookie: adminCookie, body: { logo: null, text: 'ООО "ПРОФИКС НН"' },
+        });
+        check('admin PUT -> 200', adminPut.status === 200, `got ${adminPut.status}`);
+        const adminGet = await (await api('/api/lk/branding', { cookie: adminCookie })).json();
+        check('admin GET возвращает своё', adminGet.data?.text === 'ООО "ПРОФИКС НН"');
         const adminDel = await api('/api/lk/branding', { method: 'DELETE', cookie: adminCookie });
-        check('admin DELETE -> 403', adminDel.status === 403, `got ${adminDel.status}`);
-        const adminGet = await api('/api/lk/branding', { cookie: adminCookie });
-        check('admin GET -> 200 (читать можно)', adminGet.status === 200, `got ${adminGet.status}`);
+        check('admin DELETE -> 200', adminDel.status === 200, `got ${adminDel.status}`);
+
+        // --- 6. Логотип без текста: сохраняется как есть ---
+        const logoOnly = await api('/api/lk/branding', {
+            method: 'PUT', cookie: userCookie,
+            body: { logo: { dataUrl: toDataUrl('image/png', makePng(64, 64)) }, text: '' },
+        });
+        check('PUT логотип без текста -> 200', logoOnly.status === 200, `got ${logoOnly.status}`);
+        const logoOnlyStored = await db.collection('user').findOne({ email: USER_EMAIL });
+        check(
+            'в базе text: "" и логотип (стандартный текст не записывается)',
+            logoOnlyStored?.branding?.text === '' && Boolean(logoOnlyStored?.branding?.logo?.dataUrl),
+            JSON.stringify(logoOnlyStored?.branding?.text),
+        );
 
         // --- 5. /api/users не отдаёт branding ---
         await api('/api/lk/branding', { method: 'PUT', cookie: userCookie, body: { logo: null, text: 'ИП Иванов' } });

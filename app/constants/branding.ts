@@ -8,7 +8,7 @@ export type BrandingLogo = {
 };
 
 export type Branding = {
-    /** null — фирменный логотип ПРОФИКС (SVG из public / components/PDF/Logo.tsx). */
+    /** null — стандартная эмблема Калькулятора (public/logo_calc_emblem.svg, PDF/Logo.tsx). */
     logo: BrandingLogo | null;
     /** Произвольный многострочный текст. Первая строка — название компании. */
     text: string;
@@ -24,22 +24,19 @@ export const BRANDING_LIMITS = {
     textLines: 8,
 } as const;
 
-/** Наш телефон для шапки сайта — показывается только при фирменном бренде. */
-export const DEFAULT_PHONE = {
-    display: '',
-    href: 'tel:+79202520001',
-};
-
+/** Горизонтальный логотип Калькулятора (эмблема + надпись) — шапка сайта. */
 export const DEFAULT_LOGO_SRC = '/logo_calc_prom_poly.svg';
+/** Квадратная эмблема — PDF, предпросмотр и квадратные превью. */
+export const DEFAULT_LOGO_EMBLEM_SRC = '/logo_calc_emblem.svg';
 
+/**
+ * Стандартный бренд — нейтральный, самого инструмента. Его видит гость и тот,
+ * кто ещё не заполнил свои реквизиты. Реквизиты ПРОФИКС здесь не живут:
+ * это бренд администратора в его user.branding (миграция seed-admin-branding).
+ */
 export const DEFAULT_BRANDING: Branding = {
     logo: null,
-    text: [
-        'ООО "ПРОФИКС НН"',
-        'Телефон: +7 920 252-00-01',
-        'Email: office@profix-nn.ru',
-        'ИНН 5258123969 КПП 525801001 ОГРН 1155258004648',
-    ].join('\n'),
+    text: ['Калькулятор промышленных полов', 'calcapp.webtm.ru'].join('\n'),
 };
 
 /** Строки текста реквизитов без пустых хвостов; первая — название. */

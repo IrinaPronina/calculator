@@ -4,12 +4,15 @@ import Tab from '../Simple/Tab/Tab';
 import ConcreteType from '../concreteType/concreteType';
 import { SettingsType, SettingsMode } from '@/app/models/adminDataTypes';
 import { TABS } from './tabs.data';
+import type { Branding } from '@/app/constants/branding';
 
 interface ChoiceTypeProps {
     settings: SettingsType;
     template: SettingsType;
     mode: SettingsMode;
     isAdmin: boolean;
+    /** Бренд пользователя для вкладки «Реквизиты для КП»; null — фирменный. */
+    initialBranding: Branding | null;
 }
 
 const ChoiceType = (props: ChoiceTypeProps) => {
@@ -124,6 +127,7 @@ const ChoiceType = (props: ChoiceTypeProps) => {
                         settings={concreteSettings}
                         readOnly={readOnly}
                         scope={scope}
+                        initialBranding={props.initialBranding}
                     />
                 )}
                 {activeTab === 'polymer' && <></>}

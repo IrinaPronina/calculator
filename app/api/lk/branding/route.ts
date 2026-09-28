@@ -8,15 +8,12 @@ import type { Branding } from '@/app/constants/branding';
 
 /**
  * Бренд пользователя для шапки сайта и КП: логотип + текст реквизитов.
- * Хранится в user.branding. У администратора всегда фирменный — писать нельзя.
+ * Хранится в user.branding; правило одно для всех ролей, администратор включительно.
  * См. docs/superpowers/plans/2026-09-14-white-label-branding-plan.md
  */
 
 const error = (status: number, ...errors: string[]) =>
     NextResponse.json({ status: 'error', errors }, { status });
-
-const adminForbidden = () =>
-    error(403, 'У администратора всегда фирменные реквизиты.');
 
 const getUsersCollection = async () => {
     const { default: clientPromise } = await import('@/lib/mongodb');
@@ -43,7 +40,6 @@ export async function GET() {
 export async function PUT(req: Request) {
     const { session, response } = await requireSession();
     if (response) return response;
-    if (session.user.role === 'admin') return adminForbidden();
 
     const rate = checkRateLimit(`branding:${session.user.id}`, {
         windowMs: 60 * 60_000,
@@ -101,7 +97,6 @@ export async function PUT(req: Request) {
 export async function DELETE() {
     const { session, response } = await requireSession();
     if (response) return response;
-    if (session.user.role === 'admin') return adminForbidden();
 
     try {
         const users = await getUsersCollection();

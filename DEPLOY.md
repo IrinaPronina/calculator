@@ -62,3 +62,31 @@ docker compose exec -T mongo mongorestore --archive --drop < backup-ДАТА.arc
 - Выдать админа: `docker compose exec mongo mongosh calculator --eval 'db.user.updateOne({email: "..."}, {$set: {role: "admin"}})'`
 - Зеркало Docker Hub настроено в `/etc/docker/daemon.json` (иначе 429 с российских IP)
 - HTTPS продлевается автоматически (certbot)
+
+## Автобэкап и деплой из git (добавлено 2026-09-28)
+
+Скрипты лежат в `scripts/server/`. Разовая настройка на сервере:
+
+```bash
+# 1. Репозиторий вместо rsync (один раз). Нужен deploy key или токен на GitHub.
+cd /opt && mv calculator calculator.rsync-bak && git clone git@github.com:IrinaPronina/calculator.git
+cp calculator.rsync-bak/.env calculator/.env
+cd calculator && docker compose up -d --build
+
+# 2. Бэкап каждый день в 03:15 (crontab -e)
+15 3 * * * /opt/calculator/scripts/server/backup-mongo.sh >> /var/log/calculator-backup.log 2>&1
+# с копией в S3 Timeweb: добавить перед командой  S3_BUCKET=s3://<bucket>  и настроить aws cli / s3cmd
+
+# 3. Проверить восстановление один раз (обязательно):
+docker compose exec -T mongo mongorestore --archive --gzip --drop --nsFrom='calculator.*' --nsTo='calculator_restore_test.*' < /opt/backups/calculator/mongo-<дата>.archive.gz
+docker compose exec mongo mongosh calculator_restore_test --eval 'db.user.countDocuments()'
+docker compose exec mongo mongosh calculator_restore_test --eval 'db.dropDatabase()'
+```
+
+Обновление прода теперь одной командой (после `git push` с мака):
+
+```bash
+/opt/calculator/scripts/server/deploy.sh main
+```
+
+Скрипт сам делает бэкап, тянет ветку, пересобирает, применяет миграции и проверяет, что приложение отвечает. Откат — `git reset --hard <старый коммит>` и `docker compose up -d --build`; команду печатает сам скрипт при неудаче.
