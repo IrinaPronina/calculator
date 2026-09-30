@@ -32,7 +32,8 @@ const cookieOf = (res) =>
 const signUp = async (email) => {
     const res = await fetch(`${BASE_URL}/api/auth/sign-up/email`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        // better-auth отвергает POST без Origin (MISSING_OR_NULL_ORIGIN).
+        headers: { 'Content-Type': 'application/json', Origin: BASE_URL },
         body: JSON.stringify({ name: 'Test', email, password: PASSWORD }),
     });
     if (res.status !== 200) throw new Error(`sign-up ${email} failed: ${res.status}`);
@@ -42,7 +43,7 @@ const signUp = async (email) => {
 const signIn = async (email) => {
     const res = await fetch(`${BASE_URL}/api/auth/sign-in/email`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Origin: BASE_URL },
         body: JSON.stringify({ email, password: PASSWORD }),
     });
     return cookieOf(res);

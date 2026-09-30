@@ -10,6 +10,8 @@ import {
     getOrCreateUserSettings,
 } from '@/app/utils/settings';
 import CalcModeToggle from './CalcModeToggle';
+import { resolveBranding } from '@/app/utils/branding';
+import { DEFAULT_BRANDING, type Branding } from '@/app/constants/branding';
 
 let loading = false;
 
@@ -39,6 +41,8 @@ async function loadSettings(): Promise<{
     warning: string;
     isAuthenticated: boolean;
     mode: SettingsMode;
+    /** Чья шапка в скачиваемом КП. */
+    branding: Branding;
 }> {
     const fallbackMessage =
         'База данных недоступна. Используются настройки по умолчанию.';
@@ -55,6 +59,7 @@ async function loadSettings(): Promise<{
                 warning: '',
                 isAuthenticated: false,
                 mode: 'own',
+                branding: DEFAULT_BRANDING,
             };
         }
 
@@ -69,6 +74,7 @@ async function loadSettings(): Promise<{
             warning: '',
             isAuthenticated: true,
             mode: userSettings.mode,
+            branding: resolveBranding(user),
         };
     } catch (error) {
         console.error('Error loading settings:', error);
@@ -77,6 +83,7 @@ async function loadSettings(): Promise<{
             warning: fallbackMessage,
             isAuthenticated: false,
             mode: 'own',
+            branding: DEFAULT_BRANDING,
         };
     } finally {
         loading = false;
@@ -84,7 +91,8 @@ async function loadSettings(): Promise<{
 }
 
 async function Calculator() {
-    const { settings, warning, isAuthenticated, mode } = await loadSettings();
+    const { settings, warning, isAuthenticated, mode, branding } =
+        await loadSettings();
     ConcreteCalcStore.fetchConcreteCalcSettings(settings);
     const updatedDate = formatUpdatedDate(settings[0]?.updatedAt);
 
@@ -99,7 +107,7 @@ async function Calculator() {
             <h2 className='py-2.5 mb-2.5 text-2xl font-Exo2Bold text-primary md:text-3xl'>
                 {`Расчет стоимости бетонных полов (цены обновлены ${updatedDate} г.)`}
             </h2>
-            <Form settings={settings} loading={loading} />
+            <Form settings={settings} loading={loading} branding={branding} />
         </section>
     );
 }

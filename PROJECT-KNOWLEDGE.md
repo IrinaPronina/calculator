@@ -92,6 +92,7 @@ migrate-mongo.
 | `app/components/PDF/` | Генерация КП в PDF |
 | `app/stores/concrete-calc.store.ts` | MobX-стор калькулятора |
 | `app/models/` | Типы: расчёт, админка, авторизация |
+| `user.branding`, `app/constants/branding.ts`, `app/utils/branding.ts` | Белый лейбл (ветка 1 начата 09.2026): логотип data-URL + текст реквизитов. Форма — вкладка «branding» в `/edit`, API `/api/lk/branding`. `resolveBranding(user)` даёт бренд для шапки (`layout.tsx` → `Header`) и для КП (`calculator.tsx` → `Form` → `PreOffer` → `PDF`). Дефолт нейтральный; реквизиты ПРОФИКС у админов через миграцию `seed-admin-branding` |
 | `migrations/` | migrate-mongo |
 | `scripts/` | Проверочные скрипты + `reset-password.mjs` |
 | `docs/superpowers/` | Спеки и планы: per-user settings, миграция на better-auth |

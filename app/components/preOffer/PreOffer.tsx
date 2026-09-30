@@ -9,6 +9,7 @@ import {
     ServiceItem,
 } from '@/app/models/concreteCalcTypes';
 import OfferLoader from '../Simple/OfferLoader/OfferLoader';
+import type { Branding } from '@/app/constants/branding';
 
 interface PreOfferProps {
     area: string;
@@ -31,6 +32,8 @@ interface PreOfferProps {
     preparation: string;
     settings: SettingsType[];
     loading: boolean;
+    /** Чей бренд в шапке скачиваемого КП. */
+    branding: Branding;
 }
 
 type PreOfferSection = {
@@ -141,6 +144,7 @@ const PreOffer = ({
     pump,
     thickness,
     preparation,
+    branding,
 }: PreOfferProps) => {
     const [isLoading, setIsLoading] = React.useState(true);
     const [isPdfLoading, setIsPdfLoading] = React.useState(false);
@@ -472,6 +476,7 @@ const PreOffer = ({
                             orderInfo={result.normalizedInput}
                             calcNumber={calcMeta.number}
                             calcDate={calcMeta.date}
+                            branding={branding}
                         />
                     }
                     fileName={`raschet_${calcMeta.fileDate}.pdf`}

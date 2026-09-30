@@ -9,10 +9,13 @@ import Modal from '../Simple/Modal/Modal';
 import PreOffer from '../preOffer/PreOffer';
 import { useRouter } from 'next/navigation';
 import { SettingsType } from '@/app/models/adminDataTypes';
+import type { Branding } from '@/app/constants/branding';
 
 interface FormProps {
     settings: SettingsType[];
     loading: boolean;
+    /** Бренд для шапки КП, идёт транзитом в PreOffer → PDF. */
+    branding: Branding;
 }
 
 const REINFORCEMENTS = [
@@ -31,7 +34,7 @@ const CONCRETE_GRADES = [
 
 const MICROFIBER_OPTIONS = ['0.5', '0.6', '0.7', '0.8', '0.9', '1.0'];
 
-const Form = ({ settings, loading }: FormProps) => {
+const Form = ({ settings, loading, branding }: FormProps) => {
     const router = useRouter();
 
     const [isOpen, setIsOpen] = React.useState(false);
@@ -797,6 +800,7 @@ const Form = ({ settings, loading }: FormProps) => {
                         preparation={preparation}
                         settings={settings}
                         loading={loading}
+                        branding={branding}
                     />
                 </Modal>
             )}

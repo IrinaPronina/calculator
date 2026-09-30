@@ -4,6 +4,23 @@ import localfont from 'next/font/local';
 import './globals.css';
 import Header from '@/app/components/header';
 import { headers } from 'next/headers';
+import { getCurrentUser } from '@/app/utils/settings';
+import { resolveBranding } from '@/app/utils/branding';
+import { DEFAULT_BRANDING, type Branding } from '@/app/constants/branding';
+
+/**
+ * Бренд для шапки сайта берём на сервере, чтобы у подрядчика не мигал
+ * стандартный логотип перед своим. База недоступна или сессии нет —
+ * стандартный бренд Калькулятора.
+ */
+async function loadHeaderBranding(): Promise<Branding> {
+    try {
+        return resolveBranding(await getCurrentUser());
+    } catch (error) {
+        console.error('Error loading header branding:', error);
+        return DEFAULT_BRANDING;
+    }
+}
 
 const exo2 = localfont({
     src: './fonts/Exo2Light.woff',
@@ -27,6 +44,7 @@ export default async function RootLayout({
 }>) {
     const headersList = await headers();
     const isPDFRoute = headersList.get('x-pdf-route') === 'true';
+    const branding = isPDFRoute ? DEFAULT_BRANDING : await loadHeaderBranding();
 
     return (
         <html
@@ -38,7 +56,7 @@ export default async function RootLayout({
                     : `${exo2.variable} ${geistMono.variable} h-full`
             }>
             <body suppressHydrationWarning className='h-full'>
-                {!isPDFRoute && <Header />}
+                {!isPDFRoute && <Header branding={branding} />}
                 <main
                     className={`min-h-full  ${
                         isPDFRoute ? 'h-full' : 'max-w-6xl m-auto p-4'

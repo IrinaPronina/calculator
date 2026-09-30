@@ -4,11 +4,20 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import IconButton from './Simple/IconButton/IconButton';
-import { DEFAULT_LOGO_SRC } from '@/app/constants/branding';
+import {
+    DEFAULT_LOGO_SRC,
+    brandingTitle,
+    type Branding,
+} from '@/app/constants/branding';
 
 type Me = { name: string; email: string };
 
-const Header = () => {
+type HeaderProps = {
+    /** Чей логотип в шапке: стандартный или подрядчика (см. resolveBranding). */
+    branding: Branding;
+};
+
+const Header = ({ branding }: HeaderProps) => {
     const router = useRouter();
     const [me, setMe] = useState<Me | null>(null);
     const [isOpen, setIsOpen] = useState(false);
@@ -64,14 +73,23 @@ const Header = () => {
                 {/* Левая колонка пустая: держит логотип по центру. */}
                 <div className='hidden lg:block' />
                 <div className='w-auto max-w-72 m-auto lg:max-w-80 h-20'>
-                    <Image
-                        src={DEFAULT_LOGO_SRC}
-                        alt='Logo'
-                        className='w-full h-full'
-                        width={100}
-                        height={24}
-                        priority
-                    />
+                    {branding.logo ? (
+                        // data-URL: обычный <img>, next/image тут ничего не даёт.
+                        <img
+                            src={branding.logo.dataUrl}
+                            alt={brandingTitle(branding) || 'Логотип'}
+                            className='h-full w-auto max-w-full object-contain m-auto'
+                        />
+                    ) : (
+                        <Image
+                            src={DEFAULT_LOGO_SRC}
+                            alt='Logo'
+                            className='w-full h-full'
+                            width={100}
+                            height={24}
+                            priority
+                        />
+                    )}
                 </div>
                 <div className='flex items-center'>
                     {me ? (
